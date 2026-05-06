@@ -146,7 +146,6 @@
         }
         .fmt-textarea[aria-readonly="true"] { color: #1f2937; }
         .fmt-highlight,
-        .fmt-replaced,
         .fmt-diff {
             padding: 1px 4px;
             border-radius: 5px;
@@ -154,12 +153,6 @@
         .fmt-highlight {
             background: #fef08a;
             box-shadow: inset 0 -1px 0 rgba(133, 77, 14, 0.2);
-        }
-        .fmt-replaced {
-            background: #bbf7d0;
-            color: #14532d;
-            font-weight: 800;
-            box-shadow: inset 0 -1px 0 rgba(20, 83, 45, 0.18);
         }
         .fmt-diff {
             background: #bfdbfe;
@@ -176,24 +169,16 @@
             background: #ffffff;
             flex-wrap: wrap;
         }
-        .fmt-tools {
-            display: grid;
-            grid-template-columns: minmax(220px, 1fr) minmax(220px, 1fr) minmax(320px, 1.2fr);
-            gap: 12px;
-            padding: 14px;
-            background: var(--surface-muted);
-            border-bottom: 1px solid var(--border);
-        }
         .fmt-tool-group {
             display: flex;
             flex-direction: column;
             gap: 8px;
             min-width: 0;
         }
-        .fmt-tool-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+        .fmt-panel-search {
+            padding: 14px 18px;
+            background: var(--surface-muted);
+            border-bottom: 1px solid var(--border);
         }
         .fmt-input {
             width: 100%;
@@ -249,6 +234,19 @@
             color: var(--danger);
             border-color: rgba(220, 38, 38, 0.25);
         }
+        .fmt-diff-count {
+            display: none;
+            align-items: center;
+            min-height: 44px;
+            padding: 10px 16px;
+            border: 1px solid rgba(30, 58, 138, 0.25);
+            border-radius: 8px;
+            background: #eff6ff;
+            color: #1e3a8a;
+            font-size: 14px;
+            font-weight: 800;
+        }
+        .fmt-diff-count.show { display: flex; }
         .notification {
             position: fixed;
             top: 22px;
@@ -279,7 +277,6 @@
                 border-top: 1px solid var(--border);
             }
             .fmt-textarea { min-height: 330px; }
-            .fmt-tools { grid-template-columns: 1fr; }
             .fmt-controls { align-items: stretch; }
             .fmt-btn { flex: 1 1 calc(50% - 10px); }
             .fmt-btn-primary { flex-basis: 100%; }
@@ -288,7 +285,6 @@
             .fmt-wrapper { padding: 12px; }
             .fmt-logo { height: 32px; }
             .fmt-panel-head { align-items: flex-start; flex-direction: column; }
-            .fmt-tool-row { grid-template-columns: 1fr; }
             .fmt-textarea { min-height: 280px; padding: 16px; font-size: 15px; }
             .fmt-btn { flex-basis: 100%; }
             .notification { width: calc(100% - 24px); text-align: center; }
@@ -309,29 +305,12 @@
                     <div class="app-copyright">محمد المحيميد 2026</div>
                 </header>
                 <main class="fmt-workspace">
-                    <div class="fmt-tools">
-                        <div class="fmt-tool-group">
-                            <label for="fmt-highlight-before" class="fmt-label">تلوين قبل التنسيق</label>
-                            <input id="fmt-highlight-before" class="fmt-input" type="text" placeholder="مثال: مهم، عاجل">
-                        </div>
-                        <div class="fmt-tool-group">
-                            <label for="fmt-highlight-after" class="fmt-label">تلوين بعد التنسيق</label>
-                            <input id="fmt-highlight-after" class="fmt-input" type="text" placeholder="مثال: مراجعة، نهائي">
-                        </div>
-                        <div class="fmt-tool-group">
-                            <span class="fmt-label">استبدال كلمة</span>
-                            <div class="fmt-tool-row">
-                                <input id="fmt-replace-from" class="fmt-input" type="text" placeholder="الكلمة الحالية">
-                                <input id="fmt-replace-to" class="fmt-input" type="text" placeholder="الكلمة البديلة">
-                            </div>
-                        </div>
-                    </div>
                     <div class="fmt-controls">
                         <button onclick="fmtProcess()" class="fmt-btn fmt-btn-primary">معالجة شاملة</button>
                         <button onclick="fmtRemoveBreaks()" class="fmt-btn">إزالة فواصل الأسطر</button>
                         <button onclick="fmtRemoveSpaces()" class="fmt-btn">إزالة المسافات الزائدة</button>
-                        <button onclick="fmtApplyReplaceOnly()" class="fmt-btn">تطبيق الاستبدال</button>
                         <button id="fmt-diff-btn" onclick="fmtToggleDiff()" class="fmt-btn">تمييز الفروقات</button>
+                        <span id="fmt-diff-count" class="fmt-diff-count">عدد التغيرات: 0</span>
                         <button onclick="fmtCopy()" class="fmt-btn">نسخ النتيجة</button>
                         <button onclick="fmtClear()" class="fmt-btn fmt-btn-danger">مسح الكل</button>
                     </div>
@@ -341,12 +320,20 @@
                                 <label id="fmt-input-label" for="fmt-input" class="fmt-label">النص الأصلي</label>
                                 <span id="fmt-input-count" class="fmt-meta">0 حرف</span>
                             </div>
+                            <div class="fmt-tool-group fmt-panel-search">
+                                <label for="fmt-highlight-before" class="fmt-label">بحث</label>
+                                <input id="fmt-highlight-before" class="fmt-input" type="text" placeholder="مثال: مهم، عاجل">
+                            </div>
                             <div id="fmt-input" class="fmt-textarea" role="textbox" contenteditable="true" aria-labelledby="fmt-input-label" data-placeholder="الصق النص هنا..."></div>
                         </div>
                         <div class="fmt-box-group">
                             <div class="fmt-panel-head">
                                 <label id="fmt-output-label" for="fmt-output" class="fmt-label">النص بعد التنسيق</label>
                                 <span id="fmt-output-count" class="fmt-meta">0 حرف</span>
+                            </div>
+                            <div class="fmt-tool-group fmt-panel-search">
+                                <label for="fmt-highlight-after" class="fmt-label">بحث</label>
+                                <input id="fmt-highlight-after" class="fmt-input" type="text" placeholder="مثال: مراجعة، نهائي">
                             </div>
                             <div id="fmt-output" class="fmt-textarea" role="textbox" contenteditable="true" aria-labelledby="fmt-output-label"></div>
                         </div>
@@ -366,9 +353,8 @@
     const fmtOutputCount = document.getElementById('fmt-output-count');
     const fmtHighlightBefore = document.getElementById('fmt-highlight-before');
     const fmtHighlightAfter = document.getElementById('fmt-highlight-after');
-    const fmtReplaceFrom = document.getElementById('fmt-replace-from');
-    const fmtReplaceTo = document.getElementById('fmt-replace-to');
     const fmtDiffBtn = document.getElementById('fmt-diff-btn');
+    const fmtDiffCount = document.getElementById('fmt-diff-count');
     let fmtDiffEnabled = false;
 
     function fmtCountLabel(value) {
@@ -398,19 +384,30 @@
         return value.split(/[,،]/).map(word => word.trim()).filter(Boolean);
     }
 
-    function fmtApplyReplacement(text) {
-        const from = fmtReplaceFrom.value.trim();
-        const to = fmtReplaceTo.value.trim();
-        if (!from || !to) return text;
-        return text.replace(new RegExp(fmtEscapeRegExp(from), 'gu'), to);
-    }
-
     function fmtGetText(el) {
         return el.innerText.replace(/\n$/, '');
     }
 
     function fmtSetPlainText(el, text) {
         el.textContent = text;
+    }
+
+    function fmtPastePlainText(event) {
+        event.preventDefault();
+        const text = event.clipboardData.getData('text/plain');
+        if (!text) return;
+        if (!document.execCommand('insertText', false, text)) {
+            const selection = window.getSelection();
+            if (!selection.rangeCount) return;
+            const range = selection.getRangeAt(0);
+            range.deleteContents();
+            range.insertNode(document.createTextNode(text));
+            range.collapse(false);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+        fmtUpdateCounts();
+        fmtUpdateDiffCount();
     }
 
     function fmtDiffTerms(inputText, outputText) {
@@ -433,12 +430,26 @@
         return changed;
     }
 
+    function fmtDiffTotal() {
+        if (!fmtDiffEnabled) return 0;
+        const inputText = fmtGetText(fmtInput);
+        const outputText = fmtGetText(fmtOutput);
+        return fmtDiffTerms(outputText, inputText).length + fmtDiffTerms(inputText, outputText).length;
+    }
+
+    function fmtUpdateDiffCount() {
+        const total = fmtDiffTotal();
+        fmtDiffCount.textContent = `عدد التغيرات: ${total.toLocaleString('ar-SA')}`;
+        fmtDiffCount.classList.toggle('show', fmtDiffEnabled);
+    }
+
     function fmtTermsForBox(type) {
         const terms = [];
         const highlightSource = type === 'input' ? fmtHighlightBefore : fmtHighlightAfter;
         fmtSplitWords(highlightSource.value).forEach(word => terms.push({ word, type: 'highlight' }));
-        const replacementWord = type === 'input' ? fmtReplaceFrom.value.trim() : fmtReplaceTo.value.trim();
-        if (replacementWord) terms.push({ word: replacementWord, type: 'replaced' });
+        if (type === 'input') {
+            fmtDiffTerms(fmtGetText(fmtOutput), fmtGetText(fmtInput)).forEach(word => terms.push({ word, type: 'diff' }));
+        }
         if (type === 'output') {
             fmtDiffTerms(fmtGetText(fmtInput), fmtGetText(fmtOutput)).forEach(word => terms.push({ word, type: 'diff' }));
         }
@@ -474,7 +485,7 @@
         while ((match = termRegex.exec(text)) !== null) {
             html += fmtEscapeHtml(text.slice(lastIndex, match.index));
             const item = terms.find(term => term.word.toLocaleLowerCase('ar-SA') === match[0].toLocaleLowerCase('ar-SA'));
-            const className = item && item.type === 'replaced' ? 'fmt-replaced' : item && item.type === 'diff' ? 'fmt-diff' : 'fmt-highlight';
+            const className = item && item.type === 'diff' ? 'fmt-diff' : 'fmt-highlight';
             html += `<mark class="${className}">${fmtEscapeHtml(match[0])}</mark>`;
             lastIndex = match.index + match[0].length;
         }
@@ -492,10 +503,11 @@
             fmtRenderBox(fmtOutput, outputText, fmtTermsForBox('output'));
         }
         fmtUpdateCounts();
+        fmtUpdateDiffCount();
     }
 
     function fmtSetOutput(text) {
-        fmtSetPlainText(fmtOutput, fmtApplyReplacement(text));
+        fmtSetPlainText(fmtOutput, text);
         fmtRenderHighlights();
     }
 
@@ -560,13 +572,6 @@
         fmtSetOutput(fmtGetText(fmtInput).replace(/\s+/g, " ").trim());
     }
 
-    function fmtApplyReplaceOnly() {
-        const source = fmtGetText(fmtOutput) || fmtGetText(fmtInput);
-        if (!source) return showNotify('الرجاء لصق النص أولاً');
-        if (!fmtReplaceFrom.value.trim() || !fmtReplaceTo.value.trim()) return showNotify('أدخل كلمتي الاستبدال');
-        fmtSetOutput(source);
-    }
-
     async function fmtCopy() {
         const text = fmtGetText(fmtOutput);
         if(!text) return showNotify('لا يوجد نص');
@@ -589,19 +594,17 @@
         fmtOutput.innerHTML = '';
         fmtHighlightBefore.value = '';
         fmtHighlightAfter.value = '';
-        fmtReplaceFrom.value = '';
-        fmtReplaceTo.value = '';
         fmtUpdateCounts();
     }
 
     fmtInput.addEventListener('blur', fmtRenderHighlights);
     fmtInput.addEventListener('input', fmtUpdateCounts);
+    fmtInput.addEventListener('paste', fmtPastePlainText);
     fmtOutput.addEventListener('blur', fmtRenderHighlights);
     fmtOutput.addEventListener('input', fmtUpdateCounts);
+    fmtOutput.addEventListener('paste', fmtPastePlainText);
     fmtHighlightBefore.addEventListener('input', fmtRenderHighlights);
     fmtHighlightAfter.addEventListener('input', fmtRenderHighlights);
-    fmtReplaceFrom.addEventListener('input', fmtRenderHighlights);
-    fmtReplaceTo.addEventListener('input', fmtRenderHighlights);
     fmtUpdateCounts();
 </script>
 </body>
