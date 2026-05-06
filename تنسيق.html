@@ -56,6 +56,16 @@
             font-weight: 800;
             line-height: 1.2;
         }
+        .fmt-header-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .fmt-logo {
+            height: 50px;
+            width: auto;
+            object-fit: contain;
+        }
         .app-copyright {
             color: var(--muted);
             font-size: 12px;
@@ -258,6 +268,7 @@
         @media (max-width: 900px) {
             .fmt-wrapper { padding: 18px; }
             .fmt-header { align-items: flex-start; flex-direction: column; }
+            .fmt-logo { height: 40px; }
             .fmt-grid { grid-template-columns: 1fr; min-height: auto; }
             .fmt-box-group + .fmt-box-group {
                 border-right: 0;
@@ -271,6 +282,7 @@
         }
         @media (max-width: 520px) {
             .fmt-wrapper { padding: 12px; }
+            .fmt-logo { height: 32px; }
             .fmt-panel-head { align-items: flex-start; flex-direction: column; }
             .fmt-tool-row { grid-template-columns: 1fr; }
             .fmt-textarea { min-height: 280px; padding: 16px; font-size: 15px; }
@@ -286,7 +298,10 @@
         <div class="fmt-wrapper">
             <div class="fmt-container">
                 <header class="fmt-header">
-                    <h1 class="fmt-title">تنسيق النص</h1>
+                    <div class="fmt-header-right">
+                        <img src="BOG_Logo.svg" alt="شعار" class="fmt-logo">
+                        <h1 class="fmt-title">تنسيق النص</h1>
+                    </div>
                     <div class="app-copyright">محمد المحيميد 2026</div>
                 </header>
                 <main class="fmt-workspace">
