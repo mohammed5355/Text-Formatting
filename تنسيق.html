@@ -34,14 +34,15 @@
         .fmt-wrapper {
             min-height: 100vh;
             overflow-y: auto;
-            padding: 32px;
+            padding: 24px;
         }
         .fmt-container {
             width: min(1440px, 100%);
+            min-height: calc(100vh - 48px);
             margin: 0 auto;
             display: flex;
             flex-direction: column;
-            gap: 18px;
+            gap: 14px;
         }
         .fmt-header {
             position: relative;
@@ -77,6 +78,10 @@
             white-space: nowrap;
         }
         .fmt-workspace {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
             background: rgba(255, 255, 255, 0.86);
             border: 1px solid rgba(219, 227, 238, 0.9);
             border-radius: 8px;
@@ -85,9 +90,10 @@
             overflow: hidden;
         }
         .fmt-grid {
+            flex: 1;
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            min-height: clamp(520px, 72vh, 820px);
+            min-height: clamp(640px, calc(100vh - 210px), 1040px);
         }
         .fmt-box-group {
             display: flex;
@@ -101,8 +107,8 @@
             align-items: center;
             justify-content: space-between;
             gap: 12px;
-            min-height: 58px;
-            padding: 14px 18px;
+            min-height: 48px;
+            padding: 11px 16px;
             background: var(--surface-muted);
             border-bottom: 1px solid var(--border);
         }
@@ -120,10 +126,9 @@
         .fmt-textarea {
             width: 100%;
             flex: 1;
-            min-height: 460px;
-            max-height: 70vh;
+            min-height: 560px;
             overflow: auto;
-            padding: 22px;
+            padding: 24px;
             border: 0;
             background: transparent;
             color: var(--text);
@@ -163,8 +168,8 @@
         .fmt-controls {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 14px;
+            gap: 8px;
+            padding: 10px 12px;
             border-bottom: 1px solid var(--border);
             background: #ffffff;
             flex-wrap: wrap;
@@ -176,19 +181,19 @@
             min-width: 0;
         }
         .fmt-panel-search {
-            padding: 14px 18px;
+            padding: 10px 14px;
             background: var(--surface-muted);
             border-bottom: 1px solid var(--border);
         }
         .fmt-input {
             width: 100%;
-            min-height: 42px;
-            padding: 9px 12px;
+            min-height: 36px;
+            padding: 7px 10px;
             border: 1px solid var(--border);
             border-radius: 8px;
             background: #ffffff;
             color: var(--text);
-            font-size: 14px;
+            font-size: 13px;
             direction: rtl;
             transition: border-color 0.18s ease, box-shadow 0.18s ease;
         }
@@ -204,11 +209,11 @@
             color: var(--primary-dark);
         }
         .fmt-btn {
-            min-height: 44px;
-            padding: 10px 18px;
+            min-height: 38px;
+            padding: 7px 13px;
             border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 14px;
+            border-radius: 7px;
+            font-size: 13px;
             font-weight: 800;
             cursor: pointer;
             transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
@@ -237,13 +242,13 @@
         .fmt-diff-count {
             display: none;
             align-items: center;
-            min-height: 44px;
-            padding: 10px 16px;
+            min-height: 38px;
+            padding: 7px 13px;
             border: 1px solid rgba(30, 58, 138, 0.25);
-            border-radius: 8px;
+            border-radius: 7px;
             background: #eff6ff;
             color: #1e3a8a;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 800;
         }
         .fmt-diff-count.show { display: flex; }
@@ -269,6 +274,7 @@
         }
         @media (max-width: 900px) {
             .fmt-wrapper { padding: 18px; }
+            .fmt-container { min-height: auto; }
             .fmt-header { align-items: flex-start; flex-direction: column; }
             .fmt-logo { height: 40px; }
             .fmt-grid { grid-template-columns: 1fr; min-height: auto; }
@@ -276,7 +282,7 @@
                 border-right: 0;
                 border-top: 1px solid var(--border);
             }
-            .fmt-textarea { min-height: 330px; }
+            .fmt-textarea { min-height: 420px; }
             .fmt-controls { align-items: stretch; }
             .fmt-btn { flex: 1 1 calc(50% - 10px); }
             .fmt-btn-primary { flex-basis: 100%; }
@@ -285,7 +291,7 @@
             .fmt-wrapper { padding: 12px; }
             .fmt-logo { height: 32px; }
             .fmt-panel-head { align-items: flex-start; flex-direction: column; }
-            .fmt-textarea { min-height: 280px; padding: 16px; font-size: 15px; }
+            .fmt-textarea { min-height: 340px; padding: 16px; font-size: 15px; }
             .fmt-btn { flex-basis: 100%; }
             .notification { width: calc(100% - 24px); text-align: center; }
         }
@@ -309,7 +315,7 @@
                         <button onclick="fmtProcess()" class="fmt-btn fmt-btn-primary">معالجة شاملة</button>
                         <button onclick="fmtRemoveBreaks()" class="fmt-btn">إزالة فواصل الأسطر</button>
                         <button onclick="fmtRemoveSpaces()" class="fmt-btn">إزالة المسافات الزائدة</button>
-                        <button id="fmt-diff-btn" onclick="fmtToggleDiff()" class="fmt-btn">تمييز الفروقات</button>
+                        <button id="fmt-diff-btn" onclick="fmtToggleDiff()" class="fmt-btn">مشاهدة التغيرات</button>
                         <span id="fmt-diff-count" class="fmt-diff-count">عدد التغيرات: 0</span>
                         <button onclick="fmtCopy()" class="fmt-btn">نسخ النتيجة</button>
                         <button onclick="fmtClear()" class="fmt-btn fmt-btn-danger">مسح الكل</button>
