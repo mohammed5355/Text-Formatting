@@ -214,6 +214,8 @@
             
             text = fixLensIssues(text);
             
+            text = convertToArabicNumbers(text);
+            
             text = fixDateFormat(text);
             
             text = flipNumbers(text);
@@ -261,6 +263,19 @@
             
             return str.replace(/[\u0660-\u0669\u06F0-\u06F9]/g, function(d) {
                 return arabicMap[d] || d;
+            });
+        }
+        
+        function convertToArabicNumbers(text) {
+            const toArabic = {
+                '0': '٠', '1': '١', '2': '٢', '3': '٣', '4': '٤',
+                '5': '٥', '6': '٦', '7': '٧', '8': '٨', '9': '٩',
+                '۰': '٠', '۱': '١', '۲': '٢', '۳': '٣', '۴': '٤',
+                '۵': '٥', '۶': '٦', '۷': '٧', '۸': '٨', '۹': '٩'
+            };
+            
+            return text.replace(/[0-9۰-۹]/g, function(d) {
+                return toArabic[d] || d;
             });
         }
         
