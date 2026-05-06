@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تنسيق النص</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 10px;
+            right: 0;
+            left: 0;
+            text-align: center;
+            color: white;
+            font-size: 14px;
+        }
+        
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .text-boxes {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .text-box-container {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 400px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+            background: #6b7280;
+        }
+        
+        button.primary-btn {
+            background: #4f46e5;
+            box-shadow: 0 4px 6px rgba(79, 70, 229, 0.3);
+            border: 1px solid #4338ca;
+            flex-basis: 100%; 
+	       max-width: 400px;
+        }
+
+        button.primary-btn:hover {
+            background: #4338ca;
+            box-shadow: 0 6px 12px rgba(79, 70, 229, 0.4);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            background: #4b5563;
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: none;
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            display: block;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>تنسيق النص</h1>
+        
+        <div class="text-boxes">
+            <div class="text-box-container">
+                <label>النص الأصلي (من العدسة):</label>
+                <textarea id="inputText" placeholder="الصق النص هنا..."></textarea>
+            </div>
+            
+            <div class="text-box-container">
+                <label>النص بعد التنسيق:</label>
+                <textarea id="outputText" placeholder="" readonly></textarea>
+            </div>
+        </div>
+        
+        <div class="buttons">
+            <button onclick="processAll()" class="primary-btn">
+                 معالجة شاملة  
+            </button>
+            
+            <button onclick="removeLineBreaks()">
+                إزالة فواصل الأسطر
+            </button>
+            <button onclick="removeExtraSpaces()">
+                إزالة المسافات الزائدة
+            </button>
+	    
+          <!--  <button onclick="processNumbersOnly()">
+                معالجة التواريخ والأرقام
+            </button> -->
+            <button onclick="copyToClipboard()">
+                نسخ النتيجة
+            </button>
+            <button onclick="clearAll()">
+                مسح الكل
+            </button>
+        </div>
+    </div>
+    
+    <div id="notification" class="notification">
+        تم النسخ 
+    </div>
+
+    <script>
+
+        function processAll() {
+            let text = document.getElementById('inputText').value;
+            
+            if (!text) {
+                showNotification('الرجاء لصق النص أولاً');
+                return;
+            }
+
+            text = text.replace(/\n/g, " ");
+            
+            text = fixLensIssues(text);
+            
+            text = fixDateFormat(text);
+            
+            text = flipNumbers(text);
+            
+            text = text.replace(/\s+/g, " ").trim();
+            
+            document.getElementById('outputText').value = text;
+            //showNotification('تمت المعالجة الشاملة!');
+        }
+
+        function fixLensIssues(text) {
+            text = text.replace(/\s+([،.,:;؟!])/g, '$1');
+            
+            text = text.replace(/(\(|\[|\{)\s+/g, '$1'); 
+       text = text.replace(/\s+(\)|\]|\})/g, '$1'); 
+
+       text = text.replace(/([\u0600-\u06FF])\s*,\s*([\u0600-\u06FF])/g, '$1، $2');
+
+            return text;
+        }
+
+
+        function fixDateFormat(text) {
+            const digitPattern = '[0-9\u0660-\u0669\u06F0-\u06F9]';
+            const regex = new RegExp(`(${digitPattern}{4})([-/])(${digitPattern}{1,2})([-/])(${digitPattern}{1,2})`, 'g');
+            
+            return text.replace(regex, function(match, year, separator1, month, separator2, day) {
+                const yearNum = convertToArabicNumerals(year);
+                const dayNum = convertToArabicNumerals(day);
+                
+                if (parseInt(yearNum) > 31 && parseInt(dayNum) <= 31) {
+                    return day + separator1 + month + separator2 + year;
+                }
+                return match;
+            });
+        }
+        
+        function convertToArabicNumerals(str) {
+            const arabicMap = {
+                '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
+                '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9',
+                '۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4',
+                '۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9'
+            };
+            
+            return str.replace(/[\u0660-\u0669\u06F0-\u06F9]/g, function(d) {
+                return arabicMap[d] || d;
+            });
+        }
+        
+        function flipNumbers(text) {
+            const digitPattern = '[0-9\u0660-\u0669\u06F0-\u06F9]';
+            
+            const datePattern = new RegExp(`${digitPattern}+[-/]${digitPattern}+[-/]${digitPattern}+`, 'g');
+            const dates = [];
+            const placeholders = [];
+            
+            let tempText = text.replace(datePattern, function(match) {
+                const placeholder = `__DATE_${dates.length}__`;
+                dates.push(match);
+                placeholders.push(placeholder);
+                return placeholder;
+            });
+            
+            const regex = new RegExp(`(${digitPattern}+)([-/\\\\])(${digitPattern}+)`, 'g');
+            tempText = tempText.replace(regex, function(match, firstNum, separator, secondNum) {
+                return secondNum + separator + firstNum;
+            });
+            
+            placeholders.forEach((placeholder, index) => {
+                tempText = tempText.replace(placeholder, dates[index]);
+            });
+            
+            return tempText;
+        }
+        
+        function processNumbersOnly() {
+            const inputText = document.getElementById('inputText').value;
+            let result = inputText.replace(/\n/g, " ");
+            result = result.replace(/\s+/g, " ").trim();
+            result = fixDateFormat(result);
+            result = flipNumbers(result);
+            document.getElementById('outputText').value = result;
+        }
+        
+        function removeLineBreaks() {
+            const inputText = document.getElementById('inputText').value;
+            let result = inputText.replace(/\n/g, " ");
+            result = result.replace(/\s+/g, " ").trim();
+            document.getElementById('outputText').value = result;
+        }
+        
+        function removeExtraSpaces() {
+            const inputText = document.getElementById('inputText').value;
+            let result = inputText.replace(/\s+/g, " ").trim();
+            document.getElementById('outputText').value = result;
+        }
+        
+        function copyToClipboard() {
+            const outputText = document.getElementById('outputText');
+            
+            if (outputText.value === '') {
+                showNotification(' لا يوجد نص للنسخ');
+                return;
+            }
+            
+            outputText.select();
+            document.execCommand('copy');
+            showNotification('تم النسخ ');
+        }
+        
+        function clearAll() {
+            document.getElementById('inputText').value = '';
+            document.getElementById('outputText').value = '';
+        }
+        
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 2000);
+        }
+        
+        document.getElementById('inputText').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                processAll();
+            }
+        });
+    </script>
+    
+    <p class="footer">محمد المحيميد @ 2026 </p>
+</body>
+</html>
