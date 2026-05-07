@@ -96,6 +96,8 @@
             min-height: clamp(640px, calc(100vh - 210px), 1040px);
         }
         .fmt-box-group {
+            position: relative;
+            z-index: 2;
             display: flex;
             flex-direction: column;
             min-width: 0;
@@ -160,10 +162,49 @@
             box-shadow: inset 0 -1px 0 rgba(133, 77, 14, 0.2);
         }
         .fmt-diff {
-            background: #bfdbfe;
+            position: relative;
+            background: #dbeafe;
             color: #1e3a8a;
             font-weight: 800;
             box-shadow: inset 0 -1px 0 rgba(30, 58, 138, 0.2);
+            cursor: pointer;
+            transition: background-color 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
+        }
+        .fmt-diff::after {
+            content: attr(data-diff-label);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 18px;
+            height: 18px;
+            margin-inline-start: 5px;
+            padding: 0 5px;
+            border-radius: 999px;
+            background: #1d4ed8;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 900;
+            line-height: 1;
+            vertical-align: 0.12em;
+        }
+        .fmt-diff-before {
+            background: #fee2e2;
+            color: #991b1b;
+            box-shadow: inset 0 -1px 0 rgba(153, 27, 27, 0.22);
+        }
+        .fmt-diff-before::after { background: #dc2626; }
+        .fmt-diff-after {
+            background: #dcfce7;
+            color: #166534;
+            box-shadow: inset 0 -1px 0 rgba(22, 101, 52, 0.22);
+        }
+        .fmt-diff-after::after { background: #059669; }
+        .fmt-diff-active {
+            color: #063726;
+            background: #bbf7d0;
+            box-shadow:
+                0 0 0 2px rgba(5, 150, 105, 0.28),
+                0 8px 18px rgba(5, 150, 105, 0.16);
         }
         .fmt-controls {
             display: flex;
@@ -362,6 +403,7 @@
     const fmtDiffBtn = document.getElementById('fmt-diff-btn');
     const fmtDiffCount = document.getElementById('fmt-diff-count');
     let fmtDiffEnabled = false;
+    let fmtDiffPairs = [];
 
     function fmtCountLabel(value) {
         return `${value.length.toLocaleString('ar-SA')} حرف`;
@@ -416,49 +458,118 @@
         fmtUpdateDiffCount();
     }
 
-    function fmtDiffTerms(inputText, outputText) {
-        if (!fmtDiffEnabled || !inputText || !outputText) return [];
-        const sourceCounts = new Map();
-        inputText.split(/\s+/).filter(Boolean).forEach(word => {
-            const key = word.toLocaleLowerCase('ar-SA');
-            sourceCounts.set(key, (sourceCounts.get(key) || 0) + 1);
+    function fmtTokenize(value) {
+        const tokens = [];
+        value.replace(/\S+/g, (word, index) => {
+            tokens.push({
+                word,
+                key: word.toLocaleLowerCase('ar-SA'),
+                start: index,
+                end: index + word.length
+            });
+            return word;
         });
-        const changed = [];
-        outputText.split(/\s+/).filter(Boolean).forEach(word => {
-            const key = word.toLocaleLowerCase('ar-SA');
-            const count = sourceCounts.get(key) || 0;
-            if (count > 0) {
-                sourceCounts.set(key, count - 1);
-            } else {
-                changed.push(word);
+        return tokens;
+    }
+
+    function fmtBuildDiffPairs(inputText, outputText) {
+        if (!fmtDiffEnabled || (!inputText && !outputText)) return [];
+        const before = fmtTokenize(inputText);
+        const after = fmtTokenize(outputText);
+        if (!before.length && !after.length) return [];
+
+        const rows = before.length + 1;
+        const cols = after.length + 1;
+        const table = Array.from({ length: rows }, () => Array(cols).fill(0));
+
+        for (let i = before.length - 1; i >= 0; i--) {
+            for (let j = after.length - 1; j >= 0; j--) {
+                table[i][j] = before[i].key === after[j].key
+                    ? table[i + 1][j + 1] + 1
+                    : Math.max(table[i + 1][j], table[i][j + 1]);
             }
-        });
-        return changed;
+        }
+
+        const pairs = [];
+        let i = 0;
+        let j = 0;
+        let beforeRun = [];
+        let afterRun = [];
+
+        function flush() {
+            if (!beforeRun.length && !afterRun.length) return;
+            const id = pairs.length + 1;
+            pairs.push({
+                id,
+                before: beforeRun.length ? {
+                    start: beforeRun[0].start,
+                    end: beforeRun[beforeRun.length - 1].end,
+                    text: inputText.slice(beforeRun[0].start, beforeRun[beforeRun.length - 1].end)
+                } : null,
+                after: afterRun.length ? {
+                    start: afterRun[0].start,
+                    end: afterRun[afterRun.length - 1].end,
+                    text: outputText.slice(afterRun[0].start, afterRun[afterRun.length - 1].end)
+                } : null
+            });
+            beforeRun = [];
+            afterRun = [];
+        }
+
+        while (i < before.length && j < after.length) {
+            if (before[i].key === after[j].key) {
+                flush();
+                i++;
+                j++;
+            } else if (table[i + 1][j] >= table[i][j + 1]) {
+                beforeRun.push(before[i]);
+                i++;
+            } else {
+                afterRun.push(after[j]);
+                j++;
+            }
+        }
+        while (i < before.length) beforeRun.push(before[i++]);
+        while (j < after.length) afterRun.push(after[j++]);
+        flush();
+
+        return pairs;
     }
 
     function fmtDiffTotal() {
         if (!fmtDiffEnabled) return 0;
-        const inputText = fmtGetText(fmtInput);
-        const outputText = fmtGetText(fmtOutput);
-        return fmtDiffTerms(outputText, inputText).length + fmtDiffTerms(inputText, outputText).length;
+        return fmtDiffPairs.length;
     }
 
     function fmtUpdateDiffCount() {
+        if (fmtDiffEnabled) {
+            fmtDiffPairs = fmtBuildDiffPairs(fmtGetText(fmtInput), fmtGetText(fmtOutput));
+        }
         const total = fmtDiffTotal();
         fmtDiffCount.textContent = `عدد التغيرات: ${total.toLocaleString('ar-SA')}`;
         fmtDiffCount.classList.toggle('show', fmtDiffEnabled);
+    }
+
+    function fmtDiffSegmentsForBox(type) {
+        if (!fmtDiffEnabled) return [];
+        return fmtDiffPairs
+            .map(pair => {
+                const side = type === 'input' ? pair.before : pair.after;
+                if (!side) return null;
+                return {
+                    ...side,
+                    id: pair.id,
+                    label: pair.id.toLocaleString('ar-SA'),
+                    side: type === 'input' ? 'before' : 'after'
+                };
+            })
+            .filter(Boolean);
     }
 
     function fmtTermsForBox(type) {
         const terms = [];
         const highlightSource = type === 'input' ? fmtHighlightBefore : fmtHighlightAfter;
         fmtSplitWords(highlightSource.value).forEach(word => terms.push({ word, type: 'highlight' }));
-        if (type === 'input') {
-            fmtDiffTerms(fmtGetText(fmtOutput), fmtGetText(fmtInput)).forEach(word => terms.push({ word, type: 'diff' }));
-        }
-        if (type === 'output') {
-            fmtDiffTerms(fmtGetText(fmtInput), fmtGetText(fmtOutput)).forEach(word => terms.push({ word, type: 'diff' }));
-        }
         const unique = [];
         const seen = new Set();
         terms
@@ -474,40 +585,96 @@
         return unique;
     }
 
-    function fmtRenderBox(el, text, terms) {
+    function fmtRenderBox(el, text, terms, diffSegments = []) {
         if (!text) {
             el.innerHTML = '';
             return;
         }
-        if (!terms.length) {
+        if (!terms.length && !diffSegments.length) {
             fmtSetPlainText(el, text);
             return;
         }
-        const pattern = terms.map(item => fmtEscapeRegExp(item.word)).join('|');
-        const termRegex = new RegExp(pattern, 'giu');
+        const markers = [];
+        diffSegments.forEach(segment => {
+            markers.push({
+                start: segment.start,
+                end: segment.end,
+                type: 'diff',
+                id: segment.id,
+                label: segment.label,
+                side: segment.side
+            });
+        });
+        if (terms.length) {
+            const pattern = terms.map(item => fmtEscapeRegExp(item.word)).join('|');
+            const termRegex = new RegExp(pattern, 'giu');
+            let match;
+            while ((match = termRegex.exec(text)) !== null) {
+                const coveredByDiff = diffSegments.some(segment => match.index < segment.end && match.index + match[0].length > segment.start);
+                if (!coveredByDiff) {
+                    markers.push({
+                        start: match.index,
+                        end: match.index + match[0].length,
+                        type: 'highlight'
+                    });
+                }
+            }
+        }
+        markers.sort((a, b) => a.start - b.start || b.end - a.end);
         let html = '';
         let lastIndex = 0;
-        let match;
-        while ((match = termRegex.exec(text)) !== null) {
-            html += fmtEscapeHtml(text.slice(lastIndex, match.index));
-            const item = terms.find(term => term.word.toLocaleLowerCase('ar-SA') === match[0].toLocaleLowerCase('ar-SA'));
-            const className = item && item.type === 'diff' ? 'fmt-diff' : 'fmt-highlight';
-            html += `<mark class="${className}">${fmtEscapeHtml(match[0])}</mark>`;
-            lastIndex = match.index + match[0].length;
-        }
+        markers.forEach(marker => {
+            if (marker.start < lastIndex) return;
+            html += fmtEscapeHtml(text.slice(lastIndex, marker.start));
+            const value = fmtEscapeHtml(text.slice(marker.start, marker.end));
+            if (marker.type === 'diff') {
+                const sideClass = marker.side === 'before' ? 'fmt-diff-before' : 'fmt-diff-after';
+                html += `<mark class="fmt-diff ${sideClass}" data-diff-id="${marker.id}" data-diff-label="${marker.label}" tabindex="0">${value}</mark>`;
+            } else {
+                html += `<mark class="fmt-highlight">${value}</mark>`;
+            }
+            lastIndex = marker.end;
+        });
         html += fmtEscapeHtml(text.slice(lastIndex));
         el.innerHTML = html;
+    }
+
+    function fmtMarkActiveDiff(id) {
+        document.querySelectorAll('.fmt-diff').forEach(el => {
+            el.classList.toggle('fmt-diff-active', el.dataset.diffId === String(id));
+        });
+    }
+
+    function fmtClearActiveDiff() {
+        document.querySelectorAll('.fmt-diff-active').forEach(el => el.classList.remove('fmt-diff-active'));
+    }
+
+    function fmtScrollDiffMate(id, currentEl) {
+        const mate = Array.from(document.querySelectorAll(`.fmt-diff[data-diff-id="${id}"]`)).find(el => el !== currentEl);
+        if (mate) mate.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+
+    function fmtBindDiffMarks() {
+        document.querySelectorAll('.fmt-diff').forEach(mark => {
+            mark.addEventListener('mouseenter', () => fmtMarkActiveDiff(mark.dataset.diffId));
+            mark.addEventListener('mouseleave', fmtClearActiveDiff);
+            mark.addEventListener('focus', () => fmtMarkActiveDiff(mark.dataset.diffId));
+            mark.addEventListener('blur', fmtClearActiveDiff);
+            mark.addEventListener('click', () => fmtScrollDiffMate(mark.dataset.diffId, mark));
+        });
     }
 
     function fmtRenderHighlights() {
         const inputText = fmtGetText(fmtInput);
         const outputText = fmtGetText(fmtOutput);
+        fmtDiffPairs = fmtBuildDiffPairs(inputText, outputText);
         if (document.activeElement !== fmtInput) {
-            fmtRenderBox(fmtInput, inputText, fmtTermsForBox('input'));
+            fmtRenderBox(fmtInput, inputText, fmtTermsForBox('input'), fmtDiffSegmentsForBox('input'));
         }
         if (document.activeElement !== fmtOutput) {
-            fmtRenderBox(fmtOutput, outputText, fmtTermsForBox('output'));
+            fmtRenderBox(fmtOutput, outputText, fmtTermsForBox('output'), fmtDiffSegmentsForBox('output'));
         }
+        fmtBindDiffMarks();
         fmtUpdateCounts();
         fmtUpdateDiffCount();
     }
@@ -520,6 +687,7 @@
     function fmtToggleDiff() {
         fmtDiffEnabled = !fmtDiffEnabled;
         fmtDiffBtn.classList.toggle('fmt-btn-active', fmtDiffEnabled);
+        if (!fmtDiffEnabled) fmtClearActiveDiff();
         fmtRenderHighlights();
     }
 
@@ -600,14 +768,17 @@
         fmtOutput.innerHTML = '';
         fmtHighlightBefore.value = '';
         fmtHighlightAfter.value = '';
+        fmtDiffPairs = [];
+        fmtClearActiveDiff();
         fmtUpdateCounts();
+        fmtUpdateDiffCount();
     }
 
     fmtInput.addEventListener('blur', fmtRenderHighlights);
-    fmtInput.addEventListener('input', fmtUpdateCounts);
+    fmtInput.addEventListener('input', () => { fmtUpdateCounts(); fmtUpdateDiffCount(); });
     fmtInput.addEventListener('paste', fmtPastePlainText);
     fmtOutput.addEventListener('blur', fmtRenderHighlights);
-    fmtOutput.addEventListener('input', fmtUpdateCounts);
+    fmtOutput.addEventListener('input', () => { fmtUpdateCounts(); fmtUpdateDiffCount(); });
     fmtOutput.addEventListener('paste', fmtPastePlainText);
     fmtHighlightBefore.addEventListener('input', fmtRenderHighlights);
     fmtHighlightAfter.addEventListener('input', fmtRenderHighlights);
