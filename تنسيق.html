@@ -17,6 +17,35 @@
             --success: #059669;
             --danger: #dc2626;
             --shadow: 0 18px 50px rgba(20, 30, 55, 0.12);
+            --body-start: #f8fbff;
+            --body-glow: rgba(37, 99, 235, 0.12);
+            --workspace-bg: rgba(255, 255, 255, 0.86);
+            --workspace-border: rgba(219, 227, 238, 0.9);
+            --input-bg: #ffffff;
+            --input-focus-bg: #fbfdff;
+            --placeholder: #9aa6b2;
+            --popover-bg: #ffffff;
+        }
+        body.dark-theme {
+            --bg: #0f172a;
+            --surface: #111827;
+            --surface-muted: #172033;
+            --border: #2d3b52;
+            --text: #e5e7eb;
+            --muted: #9ca3af;
+            --primary: #60a5fa;
+            --primary-dark: #3b82f6;
+            --success: #10b981;
+            --danger: #f87171;
+            --shadow: 0 18px 50px rgba(0, 0, 0, 0.34);
+            --body-start: #111827;
+            --body-glow: rgba(96, 165, 250, 0.14);
+            --workspace-bg: rgba(17, 24, 39, 0.9);
+            --workspace-border: rgba(45, 59, 82, 0.92);
+            --input-bg: #0f172a;
+            --input-focus-bg: #111827;
+            --placeholder: #6b7280;
+            --popover-bg: #111827;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { min-height: 100%; background: var(--bg); }
@@ -25,8 +54,8 @@
             overflow: hidden;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background:
-                radial-gradient(circle at top right, rgba(37, 99, 235, 0.12), transparent 32rem),
-                linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+                radial-gradient(circle at top right, var(--body-glow), transparent 32rem),
+                linear-gradient(180deg, var(--body-start) 0%, var(--bg) 100%);
             color: var(--text);
         }
         button, input, [contenteditable] { font: inherit; }
@@ -70,13 +99,50 @@
             font-weight: 700;
             white-space: nowrap;
         }
+        .fmt-header-left {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            min-width: 0;
+        }
+        .theme-toggle {
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            background: var(--input-bg);
+            color: var(--text);
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+        }
+        .theme-toggle:hover {
+            transform: translateY(-1px);
+            border-color: #b8c5d8;
+            box-shadow: 0 8px 18px rgba(20, 30, 55, 0.08);
+        }
+        .theme-toggle svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+        }
+        .theme-toggle .theme-icon-sun,
+        body.dark-theme .theme-toggle .theme-icon-moon {
+            display: none;
+        }
+        body.dark-theme .theme-toggle .theme-icon-sun {
+            display: block;
+        }
         .fmt-workspace {
             flex: 1;
             display: flex;
             flex-direction: column;
             min-height: 0;
-            background: rgba(255, 255, 255, 0.86);
-            border: 1px solid rgba(219, 227, 238, 0.9);
+            background: var(--workspace-bg);
+            border: 1px solid var(--workspace-border);
             border-radius: 8px;
             box-shadow: var(--shadow);
             backdrop-filter: blur(16px);
@@ -158,15 +224,15 @@
         }
         .fmt-textarea:empty::before {
             content: attr(data-placeholder);
-            color: #9aa6b2;
+            color: var(--placeholder);
             pointer-events: none;
         }
         .fmt-textarea:focus {
             outline: none;
-            background: #fbfdff;
+            background: var(--input-focus-bg);
             box-shadow: inset 0 0 0 2px rgba(37, 99, 235, 0.22);
         }
-        .fmt-textarea[aria-readonly="true"] { color: #1f2937; }
+        .fmt-textarea[aria-readonly="true"] { color: var(--text); }
         .fmt-highlight,
         .fmt-diff {
             padding: 1px 4px;
@@ -217,7 +283,7 @@
             padding: 10px;
             border: 1px solid rgba(15, 23, 42, 0.14);
             border-radius: 8px;
-            background: #ffffff;
+            background: var(--popover-bg);
             box-shadow: 0 18px 36px rgba(15, 23, 42, 0.2);
         }
         .fmt-edit-popover.show { display: block; }
@@ -285,7 +351,7 @@
             padding: 6px 10px;
             border: 1px solid var(--border);
             border-radius: 8px;
-            background: #ffffff;
+            background: var(--input-bg);
             color: var(--text);
             font-size: 13px;
             direction: rtl;
@@ -299,7 +365,7 @@
         .fmt-input::placeholder { color: #98a2b3; }
         .fmt-btn-active {
             border-color: rgba(37, 99, 235, 0.4);
-            background: #eff6ff;
+            background: rgba(37, 99, 235, 0.12);
             color: var(--primary-dark);
         }
         .fmt-btn {
@@ -312,7 +378,7 @@
             cursor: pointer;
             transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
             color: var(--text);
-            background: #ffffff;
+            background: var(--input-bg);
             white-space: nowrap;
         }
         .fmt-btn-primary {
@@ -386,7 +452,25 @@
                         <button onclick="fmtCopy()" class="fmt-btn">نسخ النتيجة</button>
                         <button onclick="fmtClear()" class="fmt-btn fmt-btn-danger">مسح الكل</button>
                     </div>
-                    <div class="app-copyright">محمد المحيميد 2026</div>
+                    <div class="fmt-header-left">
+                        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="تبديل الوضع الداكن" title="تبديل الوضع الداكن">
+                            <svg class="theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3 6.7 6.7 0 0 0 21 12.8Z"></path>
+                            </svg>
+                            <svg class="theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="4"></circle>
+                                <path d="M12 2v2"></path>
+                                <path d="M12 20v2"></path>
+                                <path d="m4.9 4.9 1.4 1.4"></path>
+                                <path d="m17.7 17.7 1.4 1.4"></path>
+                                <path d="M2 12h2"></path>
+                                <path d="M20 12h2"></path>
+                                <path d="m6.3 17.7-1.4 1.4"></path>
+                                <path d="m19.1 4.9-1.4 1.4"></path>
+                            </svg>
+                        </button>
+                        <div class="app-copyright">محمد المحيميد 2026</div>
+                    </div>
                 </header>
                 <main class="fmt-workspace">
                     <div class="fmt-grid">
@@ -444,9 +528,37 @@
     const fmtEditPopover = document.getElementById('fmt-edit-popover');
     const fmtEditInput = document.getElementById('fmt-edit-input');
     const fmtEditCancel = document.getElementById('fmt-edit-cancel');
+    const themeToggle = document.getElementById('theme-toggle');
     let fmtDiffEnabled = false;
     let fmtDiffPairs = [];
     let fmtEditTarget = null;
+
+    function fmtSetTheme(isDark) {
+        document.body.classList.toggle('dark-theme', isDark);
+        themeToggle.setAttribute('aria-pressed', String(isDark));
+        themeToggle.title = isDark ? 'تبديل إلى الوضع الفاتح' : 'تبديل إلى الوضع الداكن';
+        themeToggle.setAttribute('aria-label', themeToggle.title);
+    }
+
+    function fmtLoadTheme() {
+        try {
+            return localStorage.getItem('fmt-theme') === 'dark';
+        } catch (err) {
+            return false;
+        }
+    }
+
+    function fmtSaveTheme(isDark) {
+        try {
+            localStorage.setItem('fmt-theme', isDark ? 'dark' : 'light');
+        } catch (err) {}
+    }
+
+    function fmtToggleTheme() {
+        const isDark = !document.body.classList.contains('dark-theme');
+        fmtSetTheme(isDark);
+        fmtSaveTheme(isDark);
+    }
 
     function fmtCountLabel(value) {
         return `${value.length.toLocaleString('ar-SA')} حرف`;
@@ -895,6 +1007,8 @@
     fmtOutput.addEventListener('paste', fmtPastePlainText);
     fmtHighlightBefore.addEventListener('input', fmtRenderHighlights);
     fmtHighlightAfter.addEventListener('input', fmtRenderHighlights);
+    themeToggle.addEventListener('click', fmtToggleTheme);
+    fmtSetTheme(fmtLoadTheme());
     fmtUpdateCounts();
 </script>
 </body>
