@@ -57,19 +57,13 @@
         .dash-title { font-size: 24px; color: #2c3e50; margin-bottom: 10px; }
         .dash-desc { color: #7f8c8d; font-size: 14px; line-height: 1.6; }
 
-        .fmt-wrapper { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 100%; overflow-y: auto; padding: 40px; display: flex; justify-content: center; }
-        .fmt-container { background: white; border-radius: 15px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); padding: 40px; max-width: 95%; width: 100%; height: fit-content; min-height: 800px; margin-bottom: 40px; }
-        .fmt-title { color: #667eea; text-align: center; margin-bottom: 30px; font-size: 28px; }
-        .fmt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-        .fmt-box-group { display: flex; flex-direction: column; }
-        .fmt-label { font-weight: bold; color: #333; margin-bottom: 10px; font-size: 16px; }
-        .fmt-textarea { width: 100%; height: 70vh; min-height: 600px; padding: 20px; border: 2px solid #e0e0e0; border-radius: 10px; font-family: 'Courier New', monospace; font-size: 16px; resize: vertical; transition: border-color 0.3s; }
-        .fmt-textarea:focus { outline: none; border-color: #667eea; }
-        .fmt-controls { display: flex; gap: 15px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
-        .fmt-btn { padding: 15px 30px; border: none; border-radius: 10px; font-size: 15px; font-weight: bold; cursor: pointer; transition: all 0.3s; color: white; background: #6b7280; }
-        .fmt-btn-primary { background: #4f46e5; border: 1px solid #4338ca; flex-basis: 100%; max-width: 400px; }
-        .fmt-btn-primary:hover { background: #4338ca; }
-        .fmt-btn:hover { transform: translateY(-2px); background: #4b5563; }
+        .formatting-frame {
+            width: 100%;
+            height: 100%;
+            border: 0;
+            display: block;
+            background: #f4f7fb;
+        }
 
         .fact-layout { display: flex; height: 100%; }
         .fact-sidebar { width: 350px; background: #1a252f; color: white; padding: 20px; display: flex; flex-direction: column; overflow-y: auto; border-left: 4px solid #3498db; }
@@ -282,28 +276,7 @@
     </div>
 
     <div id="view-formatting" class="view-panel">
-        <div class="fmt-wrapper">
-            <div class="fmt-container">
-                <h1 class="fmt-title">تنسيق النص</h1>
-                <div class="fmt-grid">
-                    <div class="fmt-box-group">
-                        <label class="fmt-label">النص الأصلي (من العدسة):</label>
-                        <textarea id="fmt-input" class="fmt-textarea" placeholder="الصق النص هنا..."></textarea>
-                    </div>
-                    <div class="fmt-box-group">
-                        <label class="fmt-label">النص بعد التنسيق:</label>
-                        <textarea id="fmt-output" class="fmt-textarea" placeholder="" readonly></textarea>
-                    </div>
-                </div>
-                <div class="fmt-controls">
-                    <button onclick="fmtProcess()" class="fmt-btn fmt-btn-primary">معالجة شاملة</button>
-                    <button onclick="fmtRemoveBreaks()" class="fmt-btn">إزالة فواصل الأسطر</button>
-                    <button onclick="fmtRemoveSpaces()" class="fmt-btn">إزالة المسافات الزائدة</button>
-                    <button onclick="fmtCopy()" class="fmt-btn">نسخ النتيجة</button>
-                    <button onclick="fmtClear()" class="fmt-btn">مسح الكل</button>
-                </div>
-            </div>
-        </div>
+        <iframe class="formatting-frame" src="تنسيق.html" title="تنسيق النص"></iframe>
     </div>
 
     <div id="view-facts" class="view-panel">
@@ -328,7 +301,7 @@
             </div>
             <div class="fact-content">
                 <div style="flex: 1; display: flex; flex-direction: column;">
-                    <div class="fmt-label">لصق النص هنا:</div>
+                    <div class="fact-label">لصق النص هنا:</div>
                     <div id="fact-editor" class="fact-editor" contenteditable="true" placeholder="الصق النص هنا..."></div>
                 </div>
             </div>
@@ -442,42 +415,6 @@
         n.textContent = msg;
         n.classList.add('show');
         setTimeout(() => n.classList.remove('show'), 2000);
-    }
-
-    function fmtProcess() {
-        let t = document.getElementById('fmt-input').value;
-        if (!t) return showNotify('الرجاء لصق النص أولاً');
-        t = t.replace(/\n/g, " ");
-        t = t.replace(/\s+([.,:;؟!])/g, '$1').replace(/(\(|\[|\{)\s+/g, '$1').replace(/\s+(\)|\]|\})/g, '$1').replace(/([\u0600-\u06FF])\s*,\s*([\u0600-\u06FF])/g, '$1، $2');
-        t = t.replace(/[0-9۰-۹]/g, d => ({'0':'٠','1':'١','2':'٢','3':'٣','4':'٤','5':'٥','6':'٦','7':'٧','8':'٨','9':'٩','۰':'٠','۱':'١','۲':'٢','۳':'٣','۴':'٤','۵':'٥','۶':'٦','۷':'٧','۸':'٨','۹':'٩'})[d] || d);
-        const digit = '[0-9\u0660-\u0669\u06F0-\u06F9]';
-        t = t.replace(new RegExp(`(${digit}{4})([-/])(${digit}{1,2})([-/])(${digit}{1,2})`, 'g'), (m,y,s1,mo,s2,d) => {
-            const yn = y.replace(/[\u0660-\u0669\u06F0-\u06F9]/g, d => ({'٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'}[d]||d));
-            const dn = d.replace(/[\u0660-\u0669\u06F0-\u06F9]/g, d => ({'٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'}[d]||d));
-            return (parseInt(yn)>31 && parseInt(dn)<=31) ? d+s1+mo+s2+y : m;
-        });
-        const dates = [], placeholders = [];
-        t = t.replace(new RegExp(`${digit}+[-/]${digit}+[-/]${digit}+`, 'g'), m => {
-            const p = `__D_${dates.length}__`; dates.push(m); placeholders.push(p); return p;
-        });
-        t = t.replace(new RegExp(`(${digit}+)([-/\\\\])(${digit}+)`, 'g'), (m,n1,s,n2) => n2+s+n1);
-        placeholders.forEach((p,i) => t = t.replace(p, dates[i]));
-        document.getElementById('fmt-output').value = t.replace(/\s+/g, " ").trim();
-    }
-    function fmtRemoveBreaks() {
-        document.getElementById('fmt-output').value = document.getElementById('fmt-input').value.replace(/\n/g, " ").replace(/\s+/g, " ").trim();
-    }
-    function fmtRemoveSpaces() {
-        document.getElementById('fmt-output').value = document.getElementById('fmt-input').value.replace(/\s+/g, " ").trim();
-    }
-    function fmtCopy() {
-        const el = document.getElementById('fmt-output');
-        if(!el.value) return showNotify('لا يوجد نص');
-        el.select(); document.execCommand('copy'); showNotify('تم النسخ');
-    }
-    function fmtClear() {
-        document.getElementById('fmt-input').value = '';
-        document.getElementById('fmt-output').value = '';
     }
 
     document.getElementById('fact-editor').addEventListener('paste', function(e) {
