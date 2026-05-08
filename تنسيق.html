@@ -197,7 +197,7 @@
             align-items: center;
             gap: 6px;
         }
-        .fmt-history-btn {
+        .fmt-icon-btn {
             width: 28px;
             height: 28px;
             display: inline-flex;
@@ -210,18 +210,23 @@
             cursor: pointer;
             transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, opacity 0.18s ease;
         }
-        .fmt-history-btn:hover:not(:disabled) {
+        .fmt-icon-btn:hover:not(:disabled) {
             border-color: #b8c5d8;
             background: rgba(37, 99, 235, 0.08);
         }
-        .fmt-history-btn:disabled {
+        .fmt-icon-btn:disabled {
             cursor: not-allowed;
             opacity: 0.42;
         }
-        .fmt-history-btn svg {
+        .fmt-icon-btn svg {
             width: 15px;
             height: 15px;
             stroke: currentColor;
+        }
+        .fmt-font-btn {
+            font-size: 17px;
+            font-weight: 900;
+            line-height: 1;
         }
         .fmt-label {
             font-weight: 800;
@@ -513,13 +518,15 @@
                             <div class="fmt-panel-head">
                                 <label id="fmt-input-label" for="fmt-input" class="fmt-label">النص الأصلي</label>
                                 <div class="fmt-panel-actions">
-                                    <button id="fmt-input-undo" class="fmt-history-btn" type="button" aria-label="تراجع" title="تراجع">
+                                    <button id="fmt-input-font-decrease" class="fmt-icon-btn fmt-font-btn" type="button" aria-label="تصغير الخط" title="تصغير الخط">−</button>
+                                    <button id="fmt-input-font-increase" class="fmt-icon-btn fmt-font-btn" type="button" aria-label="تكبير الخط" title="تكبير الخط">+</button>
+                                    <button id="fmt-input-undo" class="fmt-icon-btn" type="button" aria-label="تراجع" title="تراجع">
                                         <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                             <path d="M9 14 4 9l5-5"></path>
                                             <path d="M4 9h10a6 6 0 0 1 0 12h-2"></path>
                                         </svg>
                                     </button>
-                                    <button id="fmt-input-redo" class="fmt-history-btn" type="button" aria-label="إعادة" title="إعادة">
+                                    <button id="fmt-input-redo" class="fmt-icon-btn" type="button" aria-label="إعادة" title="إعادة">
                                         <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                             <path d="m15 14 5-5-5-5"></path>
                                             <path d="M20 9H10a6 6 0 0 0 0 12h2"></path>
@@ -538,13 +545,15 @@
                             <div class="fmt-panel-head">
                                 <label id="fmt-output-label" for="fmt-output" class="fmt-label">النص بعد التنسيق</label>
                                 <div class="fmt-panel-actions">
-                                    <button id="fmt-output-undo" class="fmt-history-btn" type="button" aria-label="تراجع" title="تراجع">
+                                    <button id="fmt-output-font-decrease" class="fmt-icon-btn fmt-font-btn" type="button" aria-label="تصغير الخط" title="تصغير الخط">−</button>
+                                    <button id="fmt-output-font-increase" class="fmt-icon-btn fmt-font-btn" type="button" aria-label="تكبير الخط" title="تكبير الخط">+</button>
+                                    <button id="fmt-output-undo" class="fmt-icon-btn" type="button" aria-label="تراجع" title="تراجع">
                                         <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                             <path d="M9 14 4 9l5-5"></path>
                                             <path d="M4 9h10a6 6 0 0 1 0 12h-2"></path>
                                         </svg>
                                     </button>
-                                    <button id="fmt-output-redo" class="fmt-history-btn" type="button" aria-label="إعادة" title="إعادة">
+                                    <button id="fmt-output-redo" class="fmt-icon-btn" type="button" aria-label="إعادة" title="إعادة">
                                         <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                             <path d="m15 14 5-5-5-5"></path>
                                             <path d="M20 9H10a6 6 0 0 0 0 12h2"></path>
@@ -592,10 +601,18 @@
     const fmtInputRedo = document.getElementById('fmt-input-redo');
     const fmtOutputUndo = document.getElementById('fmt-output-undo');
     const fmtOutputRedo = document.getElementById('fmt-output-redo');
+    const fmtInputFontDecrease = document.getElementById('fmt-input-font-decrease');
+    const fmtInputFontIncrease = document.getElementById('fmt-input-font-increase');
+    const fmtOutputFontDecrease = document.getElementById('fmt-output-font-decrease');
+    const fmtOutputFontIncrease = document.getElementById('fmt-output-font-increase');
     let fmtDiffEnabled = false;
     let fmtDiffPairs = [];
     let fmtEditTarget = null;
     const fmtHistory = new Map();
+    const fmtFontSize = new Map();
+    const fmtMinFontSize = 12;
+    const fmtMaxFontSize = 28;
+    const fmtDefaultFontSize = 16;
 
     function fmtSetTheme(isDark) {
         document.body.classList.toggle('dark-theme', isDark);
@@ -657,6 +674,30 @@
 
     function fmtSetPlainText(el, text) {
         el.textContent = text;
+    }
+
+    function fmtInitFontControls(el, decreaseBtn, increaseBtn) {
+        fmtFontSize.set(el, {
+            size: fmtDefaultFontSize,
+            decreaseBtn,
+            increaseBtn
+        });
+        fmtApplyFontSize(el);
+    }
+
+    function fmtApplyFontSize(el) {
+        const state = fmtFontSize.get(el);
+        if (!state) return;
+        el.style.fontSize = `${state.size}px`;
+        state.decreaseBtn.disabled = state.size <= fmtMinFontSize;
+        state.increaseBtn.disabled = state.size >= fmtMaxFontSize;
+    }
+
+    function fmtChangeFontSize(el, delta) {
+        const state = fmtFontSize.get(el);
+        if (!state) return;
+        state.size = Math.min(fmtMaxFontSize, Math.max(fmtMinFontSize, state.size + delta));
+        fmtApplyFontSize(el);
     }
 
     function fmtMoveCaretToEnd(el) {
@@ -1138,6 +1179,12 @@
     window.addEventListener('scroll', fmtHideEditPopover, true);
     fmtInitHistory(fmtInput, fmtInputUndo, fmtInputRedo);
     fmtInitHistory(fmtOutput, fmtOutputUndo, fmtOutputRedo);
+    fmtInitFontControls(fmtInput, fmtInputFontDecrease, fmtInputFontIncrease);
+    fmtInitFontControls(fmtOutput, fmtOutputFontDecrease, fmtOutputFontIncrease);
+    fmtInputFontDecrease.addEventListener('click', () => fmtChangeFontSize(fmtInput, -1));
+    fmtInputFontIncrease.addEventListener('click', () => fmtChangeFontSize(fmtInput, 1));
+    fmtOutputFontDecrease.addEventListener('click', () => fmtChangeFontSize(fmtOutput, -1));
+    fmtOutputFontIncrease.addEventListener('click', () => fmtChangeFontSize(fmtOutput, 1));
     fmtInputUndo.addEventListener('click', () => fmtUndo(fmtInput));
     fmtInputRedo.addEventListener('click', () => fmtRedo(fmtInput));
     fmtOutputUndo.addEventListener('click', () => fmtUndo(fmtOutput));
