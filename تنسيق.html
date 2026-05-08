@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تنسيق النصوص</title>
+    <title>معالجة النصوص</title>
     <style>
         :root {
             --bg: #f4f7fb;
@@ -188,9 +188,11 @@
             border-bottom: 1px solid var(--border);
         }
         .fmt-panel-actions {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(4, 28px) 88px;
             align-items: center;
             gap: 6px;
+            flex: 0 0 auto;
         }
         .fmt-icon-btn {
             width: 28px;
@@ -233,6 +235,10 @@
             font-size: 12px;
             font-weight: 700;
             white-space: nowrap;
+            overflow: hidden;
+            text-align: start;
+            text-overflow: ellipsis;
+            font-variant-numeric: tabular-nums;
         }
         .fmt-textarea {
             width: 100%;
@@ -533,7 +539,7 @@
                         </div>
                         <div class="fmt-box-group fmt-box-output">
                             <div class="fmt-panel-head">
-                                <label id="fmt-output-label" for="fmt-output" class="fmt-label">النص بعد التنسيق</label>
+                                <label id="fmt-output-label" for="fmt-output" class="fmt-label">النص بعد المعالجة</label>
                                 <div class="fmt-panel-actions">
                                     <button id="fmt-output-font-decrease" class="fmt-icon-btn fmt-font-btn" type="button" aria-label="تصغير الخط" title="تصغير الخط">−</button>
                                     <button id="fmt-output-font-increase" class="fmt-icon-btn fmt-font-btn" type="button" aria-label="تكبير الخط" title="تكبير الخط">+</button>
