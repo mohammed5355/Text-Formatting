@@ -192,6 +192,37 @@
             background: var(--surface-muted);
             border-bottom: 1px solid var(--border);
         }
+        .fmt-panel-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .fmt-history-btn {
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            background: var(--input-bg);
+            color: var(--text);
+            cursor: pointer;
+            transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, opacity 0.18s ease;
+        }
+        .fmt-history-btn:hover:not(:disabled) {
+            border-color: #b8c5d8;
+            background: rgba(37, 99, 235, 0.08);
+        }
+        .fmt-history-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.42;
+        }
+        .fmt-history-btn svg {
+            width: 15px;
+            height: 15px;
+            stroke: currentColor;
+        }
         .fmt-label {
             font-weight: 800;
             color: var(--text);
@@ -481,7 +512,21 @@
                         <div class="fmt-box-group fmt-box-input">
                             <div class="fmt-panel-head">
                                 <label id="fmt-input-label" for="fmt-input" class="fmt-label">النص الأصلي</label>
-                                <span id="fmt-input-count" class="fmt-meta">0 حرف</span>
+                                <div class="fmt-panel-actions">
+                                    <button id="fmt-input-undo" class="fmt-history-btn" type="button" aria-label="تراجع" title="تراجع">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M9 14 4 9l5-5"></path>
+                                            <path d="M4 9h10a6 6 0 0 1 0 12h-2"></path>
+                                        </svg>
+                                    </button>
+                                    <button id="fmt-input-redo" class="fmt-history-btn" type="button" aria-label="إعادة" title="إعادة">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="m15 14 5-5-5-5"></path>
+                                            <path d="M20 9H10a6 6 0 0 0 0 12h2"></path>
+                                        </svg>
+                                    </button>
+                                    <span id="fmt-input-count" class="fmt-meta">0 حرف</span>
+                                </div>
                             </div>
                             <div class="fmt-tool-group fmt-panel-search">
                                 <label for="fmt-highlight-before" class="fmt-label">بحث</label>
@@ -492,7 +537,21 @@
                         <div class="fmt-box-group fmt-box-output">
                             <div class="fmt-panel-head">
                                 <label id="fmt-output-label" for="fmt-output" class="fmt-label">النص بعد التنسيق</label>
-                                <span id="fmt-output-count" class="fmt-meta">0 حرف</span>
+                                <div class="fmt-panel-actions">
+                                    <button id="fmt-output-undo" class="fmt-history-btn" type="button" aria-label="تراجع" title="تراجع">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M9 14 4 9l5-5"></path>
+                                            <path d="M4 9h10a6 6 0 0 1 0 12h-2"></path>
+                                        </svg>
+                                    </button>
+                                    <button id="fmt-output-redo" class="fmt-history-btn" type="button" aria-label="إعادة" title="إعادة">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="m15 14 5-5-5-5"></path>
+                                            <path d="M20 9H10a6 6 0 0 0 0 12h2"></path>
+                                        </svg>
+                                    </button>
+                                    <span id="fmt-output-count" class="fmt-meta">0 حرف</span>
+                                </div>
                             </div>
                             <div class="fmt-tool-group fmt-panel-search">
                                 <label for="fmt-highlight-after" class="fmt-label">بحث</label>
@@ -529,9 +588,14 @@
     const fmtEditInput = document.getElementById('fmt-edit-input');
     const fmtEditCancel = document.getElementById('fmt-edit-cancel');
     const themeToggle = document.getElementById('theme-toggle');
+    const fmtInputUndo = document.getElementById('fmt-input-undo');
+    const fmtInputRedo = document.getElementById('fmt-input-redo');
+    const fmtOutputUndo = document.getElementById('fmt-output-undo');
+    const fmtOutputRedo = document.getElementById('fmt-output-redo');
     let fmtDiffEnabled = false;
     let fmtDiffPairs = [];
     let fmtEditTarget = null;
+    const fmtHistory = new Map();
 
     function fmtSetTheme(isDark) {
         document.body.classList.toggle('dark-theme', isDark);
@@ -595,6 +659,74 @@
         el.textContent = text;
     }
 
+    function fmtMoveCaretToEnd(el) {
+        el.focus();
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        range.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
+
+    function fmtInitHistory(el, undoBtn, redoBtn) {
+        fmtHistory.set(el, {
+            undoStack: [fmtGetText(el)],
+            redoStack: [],
+            undoBtn,
+            redoBtn,
+            applying: false
+        });
+        fmtUpdateHistoryButtons(el);
+    }
+
+    function fmtUpdateHistoryButtons(el) {
+        const state = fmtHistory.get(el);
+        if (!state) return;
+        state.undoBtn.disabled = state.undoStack.length <= 1;
+        state.redoBtn.disabled = state.redoStack.length === 0;
+    }
+
+    function fmtRecordHistory(el) {
+        const state = fmtHistory.get(el);
+        if (!state || state.applying) return;
+        const text = fmtGetText(el);
+        if (state.undoStack[state.undoStack.length - 1] === text) {
+            fmtUpdateHistoryButtons(el);
+            return;
+        }
+        state.undoStack.push(text);
+        if (state.undoStack.length > 100) state.undoStack.shift();
+        state.redoStack = [];
+        fmtUpdateHistoryButtons(el);
+    }
+
+    function fmtApplyHistory(el, text) {
+        const state = fmtHistory.get(el);
+        if (!state) return;
+        state.applying = true;
+        fmtSetPlainText(el, text);
+        state.applying = false;
+        fmtRenderHighlights();
+        fmtMoveCaretToEnd(el);
+        fmtUpdateHistoryButtons(el);
+    }
+
+    function fmtUndo(el) {
+        const state = fmtHistory.get(el);
+        if (!state || state.undoStack.length <= 1) return;
+        state.redoStack.push(state.undoStack.pop());
+        fmtApplyHistory(el, state.undoStack[state.undoStack.length - 1]);
+    }
+
+    function fmtRedo(el) {
+        const state = fmtHistory.get(el);
+        if (!state || !state.redoStack.length) return;
+        const text = state.redoStack.pop();
+        state.undoStack.push(text);
+        fmtApplyHistory(el, text);
+    }
+
     function fmtPastePlainText(event) {
         event.preventDefault();
         const text = event.clipboardData.getData('text/plain');
@@ -611,6 +743,7 @@
         }
         fmtUpdateCounts();
         fmtUpdateDiffCount();
+        fmtRecordHistory(event.currentTarget);
     }
 
     function fmtTokenize(value) {
@@ -846,6 +979,7 @@
         const text = fmtGetText(box);
         const replacement = fmtEditInput.value;
         fmtSetPlainText(box, text.slice(0, start) + replacement + text.slice(end));
+        fmtRecordHistory(box);
         fmtHideEditPopover();
         fmtRenderHighlights();
         showNotify('تم الاستبدال');
@@ -887,6 +1021,7 @@
 
     function fmtSetOutput(text) {
         fmtSetPlainText(fmtOutput, text);
+        fmtRecordHistory(fmtOutput);
         fmtRenderHighlights();
     }
 
@@ -980,6 +1115,8 @@
         fmtDiffPairs = [];
         fmtClearActiveDiff();
         fmtHideEditPopover();
+        fmtRecordHistory(fmtInput);
+        fmtRecordHistory(fmtOutput);
         fmtUpdateCounts();
         fmtUpdateDiffCount();
     }
@@ -999,11 +1136,17 @@
     });
     window.addEventListener('resize', fmtHideEditPopover);
     window.addEventListener('scroll', fmtHideEditPopover, true);
+    fmtInitHistory(fmtInput, fmtInputUndo, fmtInputRedo);
+    fmtInitHistory(fmtOutput, fmtOutputUndo, fmtOutputRedo);
+    fmtInputUndo.addEventListener('click', () => fmtUndo(fmtInput));
+    fmtInputRedo.addEventListener('click', () => fmtRedo(fmtInput));
+    fmtOutputUndo.addEventListener('click', () => fmtUndo(fmtOutput));
+    fmtOutputRedo.addEventListener('click', () => fmtRedo(fmtOutput));
     fmtInput.addEventListener('blur', fmtRenderHighlights);
-    fmtInput.addEventListener('input', () => { fmtUpdateCounts(); fmtUpdateDiffCount(); });
+    fmtInput.addEventListener('input', () => { fmtUpdateCounts(); fmtUpdateDiffCount(); fmtRecordHistory(fmtInput); });
     fmtInput.addEventListener('paste', fmtPastePlainText);
     fmtOutput.addEventListener('blur', fmtRenderHighlights);
-    fmtOutput.addEventListener('input', () => { fmtUpdateCounts(); fmtUpdateDiffCount(); });
+    fmtOutput.addEventListener('input', () => { fmtUpdateCounts(); fmtUpdateDiffCount(); fmtRecordHistory(fmtOutput); });
     fmtOutput.addEventListener('paste', fmtPastePlainText);
     fmtHighlightBefore.addEventListener('input', fmtRenderHighlights);
     fmtHighlightAfter.addEventListener('input', fmtRenderHighlights);
