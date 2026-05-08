@@ -189,7 +189,7 @@
         }
         .fmt-panel-actions {
             display: grid;
-            grid-template-columns: repeat(4, 28px) 88px;
+            grid-template-columns: repeat(4, 28px) minmax(150px, auto);
             align-items: center;
             gap: 6px;
             flex: 0 0 auto;
@@ -235,9 +235,7 @@
             font-size: 12px;
             font-weight: 700;
             white-space: nowrap;
-            overflow: hidden;
             text-align: start;
-            text-overflow: ellipsis;
             font-variant-numeric: tabular-nums;
         }
         .fmt-textarea {
@@ -526,7 +524,7 @@
                                             <path d="M20 9H10a6 6 0 0 0 0 12h2"></path>
                                         </svg>
                                     </button>
-                                    <span id="fmt-input-count" class="fmt-meta">0 حرف</span>
+                                    <span id="fmt-input-count" class="fmt-meta">0 حرف  0 كلمة</span>
                                 </div>
                             </div>
                             <div class="fmt-tool-group fmt-panel-search">
@@ -555,7 +553,7 @@
                                             <path d="M20 9H10a6 6 0 0 0 0 12h2"></path>
                                         </svg>
                                     </button>
-                                    <span id="fmt-output-count" class="fmt-meta">0 حرف</span>
+                                    <span id="fmt-output-count" class="fmt-meta">0 حرف  0 كلمة</span>
                                 </div>
                             </div>
                             <div class="fmt-tool-group fmt-panel-search">
@@ -650,7 +648,9 @@
     }
 
     function fmtCountLabel(value) {
-        return `${value.length.toLocaleString('ar-SA')} حرف`;
+        const characters = value.length.toLocaleString('ar-SA');
+        const words = fmtTokenize(value).length.toLocaleString('ar-SA');
+        return `${characters} حرف  ${words} كلمة`;
     }
 
     function fmtUpdateCounts() {
@@ -959,12 +959,29 @@
         return fmtDiffPairs.length;
     }
 
+    function fmtDiffChangePercent(inputText, outputText) {
+        if (!fmtDiffEnabled) return 0;
+        const inputWords = fmtTokenize(inputText);
+        const outputWords = fmtTokenize(outputText);
+        const totalWords = Math.max(inputWords.length, outputWords.length);
+        if (!totalWords) return 0;
+        const changedWords = fmtDiffPairs.reduce((sum, pair) => {
+            const beforeCount = pair.before ? fmtTokenize(pair.before.text).length : 0;
+            const afterCount = pair.after ? fmtTokenize(pair.after.text).length : 0;
+            return sum + Math.max(beforeCount, afterCount);
+        }, 0);
+        return Math.min(100, Math.round((changedWords / totalWords) * 100));
+    }
+
     function fmtUpdateDiffCount() {
+        const inputText = fmtGetText(fmtInput);
+        const outputText = fmtGetText(fmtOutput);
         if (fmtDiffEnabled) {
-            fmtDiffPairs = fmtBuildDiffPairs(fmtGetText(fmtInput), fmtGetText(fmtOutput));
+            fmtDiffPairs = fmtBuildDiffPairs(inputText, outputText);
         }
         const total = fmtDiffTotal();
-        fmtDiffCount.textContent = `عدد التعديلات: ${total.toLocaleString('ar-SA')}`;
+        const percent = fmtDiffChangePercent(inputText, outputText).toLocaleString('ar-SA');
+        fmtDiffCount.textContent = `عدد التعديلات: ${total.toLocaleString('ar-SA')} • نسبة التغيير: ${percent}٪`;
         fmtDiffCount.classList.toggle('show', fmtDiffEnabled);
     }
 
