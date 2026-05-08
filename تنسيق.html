@@ -608,6 +608,7 @@
     let fmtDiffEnabled = false;
     let fmtDiffPairs = [];
     let fmtEditTarget = null;
+    let fmtSyncingScroll = false;
     const fmtHistory = new Map();
     const fmtFontSize = new Map();
     const fmtMinFontSize = 12;
@@ -698,6 +699,19 @@
         if (!state) return;
         state.size = Math.min(fmtMaxFontSize, Math.max(fmtMinFontSize, state.size + delta));
         fmtApplyFontSize(el);
+    }
+
+    function fmtSyncScroll(source, target) {
+        if (!fmtDiffEnabled) return;
+        if (fmtSyncingScroll) return;
+        const sourceMax = source.scrollHeight - source.clientHeight;
+        const targetMax = target.scrollHeight - target.clientHeight;
+        if (sourceMax <= 0 || targetMax <= 0) return;
+        fmtSyncingScroll = true;
+        target.scrollTop = (source.scrollTop / sourceMax) * targetMax;
+        requestAnimationFrame(() => {
+            fmtSyncingScroll = false;
+        });
     }
 
     function fmtMoveCaretToEnd(el) {
@@ -1192,9 +1206,11 @@
     fmtInput.addEventListener('blur', fmtRenderHighlights);
     fmtInput.addEventListener('input', () => { fmtUpdateCounts(); fmtUpdateDiffCount(); fmtRecordHistory(fmtInput); });
     fmtInput.addEventListener('paste', fmtPastePlainText);
+    fmtInput.addEventListener('scroll', () => fmtSyncScroll(fmtInput, fmtOutput));
     fmtOutput.addEventListener('blur', fmtRenderHighlights);
     fmtOutput.addEventListener('input', () => { fmtUpdateCounts(); fmtUpdateDiffCount(); fmtRecordHistory(fmtOutput); });
     fmtOutput.addEventListener('paste', fmtPastePlainText);
+    fmtOutput.addEventListener('scroll', () => fmtSyncScroll(fmtOutput, fmtInput));
     fmtHighlightBefore.addEventListener('input', fmtRenderHighlights);
     fmtHighlightAfter.addEventListener('input', fmtRenderHighlights);
     themeToggle.addEventListener('click', fmtToggleTheme);
