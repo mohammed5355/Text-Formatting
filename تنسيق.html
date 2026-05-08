@@ -1081,6 +1081,7 @@
     }
 
     function fmtToggleDiff() {
+        if (!fmtDiffEnabled && (!fmtGetText(fmtInput).trim() || !fmtGetText(fmtOutput).trim())) return;
         fmtDiffEnabled = !fmtDiffEnabled;
         fmtDiffBtn.classList.toggle('fmt-btn-active', fmtDiffEnabled);
         if (!fmtDiffEnabled) {
