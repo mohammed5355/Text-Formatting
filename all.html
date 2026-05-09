@@ -57,13 +57,19 @@
         .dash-title { font-size: 24px; color: #2c3e50; margin-bottom: 10px; }
         .dash-desc { color: #7f8c8d; font-size: 14px; line-height: 1.6; }
 
-        .formatting-frame {
-            width: 100%;
-            height: 100%;
-            border: 0;
-            display: block;
-            background: #f4f7fb;
-        }
+        .fmt-wrapper { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 100%; overflow-y: auto; padding: 40px; display: flex; justify-content: center; }
+        .fmt-container { background: white; border-radius: 15px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); padding: 40px; max-width: 95%; width: 100%; height: fit-content; min-height: 800px; margin-bottom: 40px; }
+        .fmt-title { color: #667eea; text-align: center; margin-bottom: 30px; font-size: 28px; }
+        .fmt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .fmt-box-group { display: flex; flex-direction: column; }
+        .fmt-label { font-weight: bold; color: #333; margin-bottom: 10px; font-size: 16px; }
+        .fmt-textarea { width: 100%; height: 70vh; min-height: 600px; padding: 20px; border: 2px solid #e0e0e0; border-radius: 10px; font-family: 'Courier New', monospace; font-size: 16px; resize: vertical; transition: border-color 0.3s; }
+        .fmt-textarea:focus { outline: none; border-color: #667eea; }
+        .fmt-controls { display: flex; gap: 15px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
+        .fmt-btn { padding: 15px 30px; border: none; border-radius: 10px; font-size: 15px; font-weight: bold; cursor: pointer; transition: all 0.3s; color: white; background: #6b7280; }
+        .fmt-btn-primary { background: #4f46e5; border: 1px solid #4338ca; flex-basis: 100%; max-width: 400px; }
+        .fmt-btn-primary:hover { background: #4338ca; }
+        .fmt-btn:hover { transform: translateY(-2px); background: #4b5563; }
 
         .fact-layout { display: flex; height: 100%; }
         .fact-sidebar { width: 350px; background: #1a252f; color: white; padding: 20px; display: flex; flex-direction: column; overflow-y: auto; border-left: 4px solid #3498db; }
@@ -227,6 +233,86 @@
             text-align: center;
         }
         .formula-h1 { text-align: center; color: var(--copy-primary); margin-bottom: 20px; }
+
+        .profiles-bar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .profiles-search-wrap {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+        .profiles-search-wrap input {
+            width: 100%;
+            padding: 10px 35px 10px 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            background: white;
+        }
+        .profiles-search-wrap input:focus { outline: none; border-color: #8e44ad; }
+        .profiles-search-wrap .search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+            pointer-events: none;
+        }
+        .profiles-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            left: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .profiles-dropdown.show { display: block; }
+        .profiles-dropdown .drop-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .profiles-dropdown .drop-item:last-child { border-bottom: none; }
+        .profiles-dropdown .drop-item:hover { background: #f4f0ff; }
+        .profiles-dropdown .drop-item.selected { background: #ede8ff; font-weight: bold; }
+        .profiles-dropdown .drop-item .item-id { font-size: 11px; color: #999; }
+        .profiles-dropdown .drop-empty {
+            padding: 15px;
+            text-align: center;
+            color: #999;
+            font-size: 13px;
+        }
+        .profiles-bar button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            transition: 0.2s;
+        }
+        .btn-save-profile { background: #27ae60; }
+        .btn-save-profile:hover { background: #219a52; }
+        .btn-delete-profile { background: #e74c3c; }
+        .btn-delete-profile:hover { background: #c0392b; }
+        .btn-load-profile { background: #3498db; }
+        .btn-load-profile:hover { background: #2980b9; }
     </style>
 </head>
 <body>
@@ -276,7 +362,28 @@
     </div>
 
     <div id="view-formatting" class="view-panel">
-        <iframe class="formatting-frame" src="تنسيق.html" title="تنسيق النص"></iframe>
+        <div class="fmt-wrapper">
+            <div class="fmt-container">
+                <h1 class="fmt-title">تنسيق النص</h1>
+                <div class="fmt-grid">
+                    <div class="fmt-box-group">
+                        <label class="fmt-label">النص الأصلي (من العدسة):</label>
+                        <textarea id="fmt-input" class="fmt-textarea" placeholder="الصق النص هنا..."></textarea>
+                    </div>
+                    <div class="fmt-box-group">
+                        <label class="fmt-label">النص بعد التنسيق:</label>
+                        <textarea id="fmt-output" class="fmt-textarea" placeholder="" readonly></textarea>
+                    </div>
+                </div>
+                <div class="fmt-controls">
+                    <button onclick="fmtProcess()" class="fmt-btn fmt-btn-primary">معالجة شاملة</button>
+                    <button onclick="fmtRemoveBreaks()" class="fmt-btn">إزالة فواصل الأسطر</button>
+                    <button onclick="fmtRemoveSpaces()" class="fmt-btn">إزالة المسافات الزائدة</button>
+                    <button onclick="fmtCopy()" class="fmt-btn">نسخ النتيجة</button>
+                    <button onclick="fmtClear()" class="fmt-btn">مسح الكل</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div id="view-facts" class="view-panel">
@@ -301,7 +408,7 @@
             </div>
             <div class="fact-content">
                 <div style="flex: 1; display: flex; flex-direction: column;">
-                    <div class="fact-label">لصق النص هنا:</div>
+                    <div class="fmt-label">لصق النص هنا:</div>
                     <div id="fact-editor" class="fact-editor" contenteditable="true" placeholder="الصق النص هنا..."></div>
                 </div>
             </div>
@@ -312,9 +419,24 @@
         <div class="formula-wrapper">
             <h1 class="formula-h1">صيغ الحاضرون</h1>
 
+            <div class="controls-container" style="border-top-color: #8e44ad;">
+                <div class="profiles-bar">
+                    <div class="profiles-search-wrap">
+                        <input type="text" id="profile-search" placeholder="ابحث عن شخص محفوظ..." autocomplete="off" onfocus="openDropdown()" oninput="filterProfiles()">
+                        <svg class="search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                        <div class="profiles-dropdown" id="profiles-dropdown"></div>
+                    </div>
+                    <button class="btn-save-profile" onclick="saveProfile()">حفظ</button>
+                    <button class="btn-delete-profile" onclick="deleteProfile()">حذف</button>
+                    <button class="btn-save-profile" style="background:#8e44ad;" onclick="exportProfiles()">تصدير ملف</button>
+                    <button class="btn-load-profile" onclick="document.getElementById('import-file').click()">استيراد ملف</button>
+                    <input type="file" id="import-file" accept=".json" style="display:none;" onchange="importProfiles(event)">
+                </div>
+            </div>
+
             <div class="controls-container">
                 <div class="controls-grid">
-                    
+
                     <div class="input-group">
                         <label>اسم مقدم الصحيفة‫/‬ الحاضر</label>
                         <input type="text" id="name" placeholder="‫.‬..." oninput="updateAll()">
@@ -417,6 +539,58 @@
         setTimeout(() => n.classList.remove('show'), 2000);
     }
 
+    function fmtProcess() {
+        let t = document.getElementById('fmt-input').value;
+        if (!t) return showNotify('الرجاء لصق النص أولاً');
+        t = t.replace(/\n/g, " ");
+        t = t.replace(/\s+([.,:;؟!])/g, '$1').replace(/(\(|\[|\{)\s+/g, '$1').replace(/\s+(\)|\]|\})/g, '$1').replace(/([\u0621-\u064A\u0671-\u06D3])\s*,\s*([\u0621-\u064A\u0671-\u06D3])/g, '$1، $2');
+        t = t.replace(/[0-9۰-۹]/g, d => ({'0':'٠','1':'١','2':'٢','3':'٣','4':'٤','5':'٥','6':'٦','7':'٧','8':'٨','9':'٩','۰':'٠','۱':'١','۲':'٢','۳':'٣','۴':'٤','۵':'٥','۶':'٦','۷':'٧','۸':'٨','۹':'٩'})[d] || d);
+        t = t.replace(new RegExp('([0-9\u0660-\u0669\u06F0-\u06F9]{1,3})(?:[,\u060C]([0-9\u0660-\u0669\u06F0-\u06F9]{1,3}))+', 'g'), function(m) {
+            var parts = m.split(/[,\u060C]/);
+            var first = parts[0], last = parts[parts.length - 1];
+            if (first.length < 3 && parts.slice(1).every(function(p) { return p.length === 3; })) return m;
+            var rev = parts.slice().reverse();
+            if (rev[0].length < 3 && rev.slice(1).every(function(p) { return p.length === 3; })) {
+                return rev.join(m.match(/[,\u060C]/)[0]);
+            }
+            var zeroChars = '0\u0660\u06F0';
+            if (parts.length >= 2 && first.length === 3 && last.length === 3) {
+                if (zeroChars.indexOf(first[0]) !== -1 && zeroChars.indexOf(last[0]) === -1) {
+                    return parts.reverse().join(m.match(/[,\u060C]/)[0]);
+                }
+            }
+            return m;
+        });
+        const digit = '[0-9\u0660-\u0669\u06F0-\u06F9]';
+        t = t.replace(new RegExp(`(${digit}{4})([-/])(${digit}{1,2})([-/])(${digit}{1,2})`, 'g'), (m,y,s1,mo,s2,d) => {
+            const yn = y.replace(/[\u0660-\u0669\u06F0-\u06F9]/g, d => ({'٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'}[d]||d));
+            const dn = d.replace(/[\u0660-\u0669\u06F0-\u06F9]/g, d => ({'٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'}[d]||d));
+            return (parseInt(yn)>31 && parseInt(dn)<=31) ? d+s1+mo+s2+y : m;
+        });
+        const dates = [], placeholders = [];
+        t = t.replace(new RegExp(`${digit}+[-/]${digit}+[-/]${digit}+`, 'g'), m => {
+            const p = `__D_${dates.length}__`; dates.push(m); placeholders.push(p); return p;
+        });
+        t = t.replace(new RegExp(`(${digit}+)([-/\\\\])(${digit}+)`, 'g'), (m,n1,s,n2) => n2+s+n1);
+        placeholders.forEach((p,i) => t = t.replace(p, dates[i]));
+        document.getElementById('fmt-output').value = t.replace(/\s+/g, " ").trim();
+    }
+    function fmtRemoveBreaks() {
+        document.getElementById('fmt-output').value = document.getElementById('fmt-input').value.replace(/\n/g, " ").replace(/\s+/g, " ").trim();
+    }
+    function fmtRemoveSpaces() {
+        document.getElementById('fmt-output').value = document.getElementById('fmt-input').value.replace(/\s+/g, " ").trim();
+    }
+    function fmtCopy() {
+        const el = document.getElementById('fmt-output');
+        if(!el.value) return showNotify('لا يوجد نص');
+        el.select(); document.execCommand('copy'); showNotify('تم النسخ');
+    }
+    function fmtClear() {
+        document.getElementById('fmt-input').value = '';
+        document.getElementById('fmt-output').value = '';
+    }
+
     document.getElementById('fact-editor').addEventListener('paste', function(e) {
         e.preventDefault();
         document.execCommand("insertText", false, (e.originalEvent || e).clipboardData.getData('text/plain'));
@@ -510,7 +684,8 @@
             filerRole,
             filerGender,
             wakalaSource,
-            hasLicense
+            hasLicense,
+            type
         } = config;
 
         const name = val('name');
@@ -522,8 +697,14 @@
         const licDate = getDate('lic'); 
         const jobSource = document.getElementById('doc_source_manual').value || "..........";
         
+        let appLabel = "";
+        if (type === 'appellee') {
+            appLabel = appellantGender === 'male' ? "المستأنف ضده" : "المستأنف ضدها";
+        } else {
+            appLabel = appellantGender === 'male' ? "المستأنف" : "المستأنفة";
+        }
+        
         let introTitle = "";
-        const appLabel = appellantGender === 'male' ? "المستأنف" : "المستأنفة";
         
         if (filerRole === 'asil') {
             introTitle = appLabel; 
@@ -545,25 +726,22 @@
         let text = `${introTitle}: ${name}، ${zoo} ${idPhrase}، `;
 
         if (filerRole === 'asil') {
-            text += (filerGender === 'male' ? "" : "");
+            text += ""; 
         } 
         else if (filerRole === 'momathil') {
             const authorized = filerGender === 'male' ? "المفوض" : "المفوضة";
             text += `${authorized} بخطاب ${jobSource} رقم (${docNum}) وتاريخ ${docDate}هـ.`;
         } 
         else if (filerRole === 'wakil') {
-            const clientTerm = (appellantGender === 'male') ? 
-                               (filerGender === 'male' ? "الموكل" : "الموكلة") : 
-                               (filerGender === 'male' ? "الموكل" : "الموكلة"); 
+            const clientTerm = (filerGender === 'male') ? "الموكل" : "الموكلة";
 
             const srcText = wakalaSource === 'mowatheqeen' ? "الموثقين" : "الخدمات الإلكترونية";
-            
-            text += `${clientTerm} بالوكالة رقم (${docNum}) الصادرة من ${srcText} بتاريخ ${docDate}هـ`;
 
             if (hasLicense) {
-                text += `، ورقم رخصة المحاماة: (${licNum}) وتاريخ ${licDate}هـ.`;
+                text += `${clientTerm} بالوكالة رقم (${docNum}) الصادرة من ${srcText} بتاريخ ${docDate}هـ، ورقم رخصة المحاماة: (${licNum}) وتاريخ ${licDate}هـ.`;
             } else {
-                text += `.`;
+                const trainee = (filerGender === 'male') ? "محامي متدرب" : "محامية متدربة";
+                text += `-${trainee}- بموجب الوكالة رقم (${docNum}) الصادرة من ${srcText} بتاريخ ${docDate}هـ.`;
             }
         }
 
@@ -571,56 +749,84 @@
     }
 
     const scenarios = [
-        { title: "أصيلة (نفسها)", aGen: 'female', fRole: 'asil', fGen: 'female' },
-        { title: "ممثل (ذكر)", aGen: 'female', fRole: 'momathil', fGen: 'male' },
-        { title: "ممثلة (أنثى)", aGen: 'female', fRole: 'momathil', fGen: 'female' },
+        { title: "أصيلة (نفسها)", type: 'appellant', aGen: 'female', fRole: 'asil', fGen: 'female' },
+        { title: "ممثل (ذكر)", type: 'appellant', aGen: 'female', fRole: 'momathil', fGen: 'male' },
+        { title: "ممثلة (أنثى)", type: 'appellant', aGen: 'female', fRole: 'momathil', fGen: 'female' },
+        { title: "وكيل (موثقين + رخصة)", type: 'appellant', aGen: 'female', fRole: 'wakil', fGen: 'male', src: 'mowatheqeen', lic: true },
+        { title: "وكيل (موثقين + بلا رخصة)", type: 'appellant', aGen: 'female', fRole: 'wakil', fGen: 'male', src: 'mowatheqeen', lic: false },
+        { title: "وكيل (إلكترونية + رخصة)", type: 'appellant', aGen: 'female', fRole: 'wakil', fGen: 'male', src: 'electronic', lic: true },
+        { title: "وكيل (إلكترونية + بلا رخصة)", type: 'appellant', aGen: 'female', fRole: 'wakil', fGen: 'male', src: 'electronic', lic: false },
+        { title: "وكيلة (موثقين + رخصة)", type: 'appellant', aGen: 'female', fRole: 'wakil', fGen: 'female', src: 'mowatheqeen', lic: true },
+        { title: "وكيلة (موثقين + بلا رخصة)", type: 'appellant', aGen: 'female', fRole: 'wakil', fGen: 'female', src: 'mowatheqeen', lic: false },
+        { title: "وكيلة (إلكترونية + رخصة)", type: 'appellant', aGen: 'female', fRole: 'wakil', fGen: 'female', src: 'electronic', lic: true },
+        { title: "وكيلة (إلكترونية + بلا رخصة)", type: 'appellant', aGen: 'female', fRole: 'wakil', fGen: 'female', src: 'electronic', lic: false },
 
-        { title: "وكيل (موثقين + رخصة)", aGen: 'female', fRole: 'wakil', fGen: 'male', src: 'mowatheqeen', lic: true },
-        { title: "وكيل (موثقين + بلا رخصة)", aGen: 'female', fRole: 'wakil', fGen: 'male', src: 'mowatheqeen', lic: false },
-        { title: "وكيل (إلكترونية + رخصة)", aGen: 'female', fRole: 'wakil', fGen: 'male', src: 'electronic', lic: true },
-        { title: "وكيل (إلكترونية + بلا رخصة)", aGen: 'female', fRole: 'wakil', fGen: 'male', src: 'electronic', lic: false },
-        
-        { title: "وكيلة (موثقين + رخصة)", aGen: 'female', fRole: 'wakil', fGen: 'female', src: 'mowatheqeen', lic: true },
-        { title: "وكيلة (موثقين + بلا رخصة)", aGen: 'female', fRole: 'wakil', fGen: 'female', src: 'mowatheqeen', lic: false },
-        { title: "وكيلة (إلكترونية + رخصة)", aGen: 'female', fRole: 'wakil', fGen: 'female', src: 'electronic', lic: true },
-        { title: "وكيلة (إلكترونية + بلا رخصة)", aGen: 'female', fRole: 'wakil', fGen: 'female', src: 'electronic', lic: false },
+        { title: "أصيل (نفسه)", type: 'appellant', aGen: 'male', fRole: 'asil', fGen: 'male' },
+        { title: "ممثل (ذكر)", type: 'appellant', aGen: 'male', fRole: 'momathil', fGen: 'male' },
+        { title: "ممثلة (أنثى)", type: 'appellant', aGen: 'male', fRole: 'momathil', fGen: 'female' },
+        { title: "وكيل (موثقين + رخصة)", type: 'appellant', aGen: 'male', fRole: 'wakil', fGen: 'male', src: 'mowatheqeen', lic: true },
+        { title: "وكيل (موثقين + بلا رخصة)", type: 'appellant', aGen: 'male', fRole: 'wakil', fGen: 'male', src: 'mowatheqeen', lic: false },
+        { title: "وكيل (إلكترونية + رخصة)", type: 'appellant', aGen: 'male', fRole: 'wakil', fGen: 'male', src: 'electronic', lic: true },
+        { title: "وكيل (إلكترونية + بلا رخصة)", type: 'appellant', aGen: 'male', fRole: 'wakil', fGen: 'male', src: 'electronic', lic: false },
+        { title: "وكيلة (موثقين + رخصة)", type: 'appellant', aGen: 'male', fRole: 'wakil', fGen: 'female', src: 'mowatheqeen', lic: true },
+        { title: "وكيلة (موثقين + بلا رخصة)", type: 'appellant', aGen: 'male', fRole: 'wakil', fGen: 'female', src: 'mowatheqeen', lic: false },
+        { title: "وكيلة (إلكترونية + رخصة)", type: 'appellant', aGen: 'male', fRole: 'wakil', fGen: 'female', src: 'electronic', lic: true },
+        { title: "وكيلة (إلكترونية + بلا رخصة)", type: 'appellant', aGen: 'male', fRole: 'wakil', fGen: 'female', src: 'electronic', lic: false },
 
-        { title: "أصيل (نفسه)", aGen: 'male', fRole: 'asil', fGen: 'male' },
-        { title: "ممثل (ذكر)", aGen: 'male', fRole: 'momathil', fGen: 'male' },
-        { title: "ممثلة (أنثى)", aGen: 'male', fRole: 'momathil', fGen: 'female' },
-        
-        { title: "وكيل (موثقين + رخصة)", aGen: 'male', fRole: 'wakil', fGen: 'male', src: 'mowatheqeen', lic: true },
-        { title: "وكيل (موثقين + بلا رخصة)", aGen: 'male', fRole: 'wakil', fGen: 'male', src: 'mowatheqeen', lic: false },
-        { title: "وكيل (إلكترونية + رخصة)", aGen: 'male', fRole: 'wakil', fGen: 'male', src: 'electronic', lic: true },
-        { title: "وكيل (إلكترونية + بلا رخصة)", aGen: 'male', fRole: 'wakil', fGen: 'male', src: 'electronic', lic: false },
-        
-        { title: "وكيلة (موثقين + رخصة)", aGen: 'male', fRole: 'wakil', fGen: 'female', src: 'mowatheqeen', lic: true },
-        { title: "وكيلة (موثقين + بلا رخصة)", aGen: 'male', fRole: 'wakil', fGen: 'female', src: 'mowatheqeen', lic: false },
-        { title: "وكيلة (إلكترونية + رخصة)", aGen: 'male', fRole: 'wakil', fGen: 'female', src: 'electronic', lic: true },
-        { title: "وكيلة (إلكترونية + بلا رخصة)", aGen: 'male', fRole: 'wakil', fGen: 'female', src: 'electronic', lic: false },
+        { title: "أصيلة (نفسها)", type: 'appellee', aGen: 'female', fRole: 'asil', fGen: 'female' },
+        { title: "ممثل (ذكر)", type: 'appellee', aGen: 'female', fRole: 'momathil', fGen: 'male' },
+        { title: "ممثلة (أنثى)", type: 'appellee', aGen: 'female', fRole: 'momathil', fGen: 'female' },
+        { title: "وكيل (موثقين + رخصة)", type: 'appellee', aGen: 'female', fRole: 'wakil', fGen: 'male', src: 'mowatheqeen', lic: true },
+        { title: "وكيل (موثقين + بلا رخصة)", type: 'appellee', aGen: 'female', fRole: 'wakil', fGen: 'male', src: 'mowatheqeen', lic: false },
+        { title: "وكيل (إلكترونية + رخصة)", type: 'appellee', aGen: 'female', fRole: 'wakil', fGen: 'male', src: 'electronic', lic: true },
+        { title: "وكيل (إلكترونية + بلا رخصة)", type: 'appellee', aGen: 'female', fRole: 'wakil', fGen: 'male', src: 'electronic', lic: false },
+        { title: "وكيلة (موثقين + رخصة)", type: 'appellee', aGen: 'female', fRole: 'wakil', fGen: 'female', src: 'mowatheqeen', lic: true },
+        { title: "وكيلة (موثقين + بلا رخصة)", type: 'appellee', aGen: 'female', fRole: 'wakil', fGen: 'female', src: 'mowatheqeen', lic: false },
+        { title: "وكيلة (إلكترونية + رخصة)", type: 'appellee', aGen: 'female', fRole: 'wakil', fGen: 'female', src: 'electronic', lic: true },
+        { title: "وكيلة (إلكترونية + بلا رخصة)", type: 'appellee', aGen: 'female', fRole: 'wakil', fGen: 'female', src: 'electronic', lic: false },
+
+        { title: "أصيل (نفسه)", type: 'appellee', aGen: 'male', fRole: 'asil', fGen: 'male' },
+        { title: "ممثل (ذكر)", type: 'appellee', aGen: 'male', fRole: 'momathil', fGen: 'male' },
+        { title: "ممثلة (أنثى)", type: 'appellee', aGen: 'male', fRole: 'momathil', fGen: 'female' },
+        { title: "وكيل (موثقين + رخصة)", type: 'appellee', aGen: 'male', fRole: 'wakil', fGen: 'male', src: 'mowatheqeen', lic: true },
+        { title: "وكيل (موثقين + بلا رخصة)", type: 'appellee', aGen: 'male', fRole: 'wakil', fGen: 'male', src: 'mowatheqeen', lic: false },
+        { title: "وكيل (إلكترونية + رخصة)", type: 'appellee', aGen: 'male', fRole: 'wakil', fGen: 'male', src: 'electronic', lic: true },
+        { title: "وكيل (إلكترونية + بلا رخصة)", type: 'appellee', aGen: 'male', fRole: 'wakil', fGen: 'male', src: 'electronic', lic: false },
+        { title: "وكيلة (موثقين + رخصة)", type: 'appellee', aGen: 'male', fRole: 'wakil', fGen: 'female', src: 'mowatheqeen', lic: true },
+        { title: "وكيلة (موثقين + بلا رخصة)", type: 'appellee', aGen: 'male', fRole: 'wakil', fGen: 'female', src: 'mowatheqeen', lic: false },
+        { title: "وكيلة (إلكترونية + رخصة)", type: 'appellee', aGen: 'male', fRole: 'wakil', fGen: 'female', src: 'electronic', lic: true },
+        { title: "وكيلة (إلكترونية + بلا رخصة)", type: 'appellee', aGen: 'male', fRole: 'wakil', fGen: 'female', src: 'electronic', lic: false },
     ];
 
     function renderGrid() {
         const container = document.getElementById('grid-container');
         container.innerHTML = '';
         
-        let currentGroup = '';
+        let lastHeader = '';
 
         scenarios.forEach((s, index) => {
-            let groupLabel = s.aGen === 'male' ? "عن: المستأنف" : "عن: المستأنفة";
-            let tags = `<span class="tag ${s.aGen === 'male' ? 'tag-m' : 'tag-f'}">${groupLabel}</span>`;
+            let mainLabel = "";
+            if (s.type === 'appellee') {
+                mainLabel = s.aGen === 'male' ? "المستأنف ضده" : "المستأنف ضدها";
+            } else {
+                mainLabel = s.aGen === 'male' ? "المستأنف" : "المستأنفة";
+            }
+
+            let groupHeaderKey = mainLabel;
+
+            let tags = `<span class="tag ${s.aGen === 'male' ? 'tag-m' : 'tag-f'}">عن: ${mainLabel}</span>`;
             
             if (s.fRole === 'wakil') {
                 tags += `<span class="tag tag-wakil">${s.src === 'mowatheqeen' ? 'موثقين' : 'إلكترونية'}</span>`;
                 tags += `<span class="tag tag-src">${s.lic ? 'مع رخصة' : 'بدون'}</span>`;
             }
 
-            if (currentGroup !== s.aGen) {
+            if (lastHeader !== groupHeaderKey) {
                const sep = document.createElement('div');
                sep.className = 'section-title';
-               sep.innerText = "خيارات " + groupLabel;
+               sep.innerText = "خيارات " + mainLabel;
                container.appendChild(sep);
-               currentGroup = s.aGen;
+               lastHeader = groupHeaderKey;
             }
 
             const div = document.createElement('div');
@@ -649,7 +855,8 @@
                 filerRole: s.fRole,
                 filerGender: s.fGen,
                 wakalaSource: s.src,
-                hasLicense: s.lic
+                hasLicense: s.lic,
+                type: s.type
             });
             document.getElementById(`text_${index}`).innerText = text;
         });
@@ -673,15 +880,25 @@
     }
 
     const quickMapping = {
-        'asil-m': [{ label: 'عن المستأنف', value: '11' }],
-        'asil-f': [{ label: 'عن المستأنفة', value: '0' }],
+        'asil-m': [
+            { label: 'عن المستأنف', value: '11' },
+            { label: 'عن المستأنف ضده', value: '33' }
+        ],
+        'asil-f': [
+            { label: 'عن المستأنفة', value: '0' },
+            { label: 'عن المستأنف ضدها', value: '22' }
+        ],
         'momathil-m': [
             { label: 'عن المستأنفة', value: '1' },
-            { label: 'عن المستأنف', value: '12' }
+            { label: 'عن المستأنف', value: '12' },
+            { label: 'عن المستأنف ضدها', value: '23' },
+            { label: 'عن المستأنف ضده', value: '34' }
         ],
         'momathil-f': [
             { label: 'عن المستأنفة', value: '2' },
-            { label: 'عن المستأنف', value: '13' }
+            { label: 'عن المستأنف', value: '13' },
+            { label: 'عن المستأنف ضدها', value: '24' },
+            { label: 'عن المستأنف ضده', value: '35' }
         ],
         'wakil-m': [
             { label: 'عن المستأنفة - موثقين + رخصة', value: '3' },
@@ -691,7 +908,15 @@
             { label: 'عن المستأنف - موثقين + رخصة', value: '14' },
             { label: 'عن المستأنف - موثقين + بلا رخصة', value: '15' },
             { label: 'عن المستأنف - إلكترونية + رخصة', value: '16' },
-            { label: 'عن المستأنف - إلكترونية + بلا رخصة', value: '17' }
+            { label: 'عن المستأنف - إلكترونية + بلا رخصة', value: '17' },
+            { label: 'عن المستأنف ضدها - موثقين + رخصة', value: '25' },
+            { label: 'عن المستأنف ضدها - موثقين + بلا رخصة', value: '26' },
+            { label: 'عن المستأنف ضدها - إلكترونية + رخصة', value: '27' },
+            { label: 'عن المستأنف ضدها - إلكترونية + بلا رخصة', value: '28' },
+            { label: 'عن المستأنف ضده - موثقين + رخصة', value: '36' },
+            { label: 'عن المستأنف ضده - موثقين + بلا رخصة', value: '37' },
+            { label: 'عن المستأنف ضده - إلكترونية + رخصة', value: '38' },
+            { label: 'عن المستأنف ضده - إلكترونية + بلا رخصة', value: '39' }
         ],
         'wakil-f': [
             { label: 'عن المستأنفة - موثقين + رخصة', value: '7' },
@@ -701,7 +926,15 @@
             { label: 'عن المستأنف - موثقين + رخصة', value: '18' },
             { label: 'عن المستأنف - موثقين + بلا رخصة', value: '19' },
             { label: 'عن المستأنف - إلكترونية + رخصة', value: '20' },
-            { label: 'عن المستأنف - إلكترونية + بلا رخصة', value: '21' }
+            { label: 'عن المستأنف - إلكترونية + بلا رخصة', value: '21' },
+            { label: 'عن المستأنف ضدها - موثقين + رخصة', value: '29' },
+            { label: 'عن المستأنف ضدها - موثقين + بلا رخصة', value: '30' },
+            { label: 'عن المستأنف ضدها - إلكترونية + رخصة', value: '31' },
+            { label: 'عن المستأنف ضدها - إلكترونية + بلا رخصة', value: '32' },
+            { label: 'عن المستأنف ضده - موثقين + رخصة', value: '40' },
+            { label: 'عن المستأنف ضده - موثقين + بلا رخصة', value: '41' },
+            { label: 'عن المستأنف ضده - إلكترونية + رخصة', value: '42' },
+            { label: 'عن المستأنف ضده - إلكترونية + بلا رخصة', value: '43' }
         ]
     };
 
@@ -718,13 +951,6 @@
         }
         
         const options = quickMapping[type];
-        
-        if (options.length === 1) {
-            const index = options[0].value;
-            highlightCard(index);
-            detailSelect.disabled = true;
-            return;
-        }
         
         options.forEach(opt => {
             const option = document.createElement('option');
@@ -771,7 +997,176 @@
         updateAll();
     }
 
-    window.onload = renderGrid;
+    const PROFILES_KEY = 'savedProfiles';
+
+    function getProfiles() {
+        try { return JSON.parse(localStorage.getItem(PROFILES_KEY)) || {}; }
+        catch(e) { return {}; }
+    }
+
+    function setProfiles(profiles) {
+        localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
+    }
+
+    function getFormData() {
+        return {
+            name: document.getElementById('name').value,
+            id_type: document.getElementById('id_type').value,
+            id_num: document.getElementById('id_num').value,
+            doc_d: document.getElementById('doc_d').value,
+            doc_m: document.getElementById('doc_m').value,
+            doc_y: document.getElementById('doc_y').value,
+            doc_num: document.getElementById('doc_num').value,
+            doc_source_manual: document.getElementById('doc_source_manual').value,
+            lic_d: document.getElementById('lic_d').value,
+            lic_m: document.getElementById('lic_m').value,
+            lic_y: document.getElementById('lic_y').value,
+            lic_num: document.getElementById('lic_num').value
+        };
+    }
+
+    function fillForm(data) {
+        document.getElementById('name').value = data.name || '';
+        document.getElementById('id_type').value = data.id_type || 'الهوية الوطنية';
+        document.getElementById('id_num').value = data.id_num || '';
+        document.getElementById('doc_d').value = data.doc_d || '';
+        document.getElementById('doc_m').value = data.doc_m || '';
+        document.getElementById('doc_y').value = data.doc_y || '';
+        document.getElementById('doc_num').value = data.doc_num || '';
+        document.getElementById('doc_source_manual').value = data.doc_source_manual || '';
+        document.getElementById('lic_d').value = data.lic_d || '';
+        document.getElementById('lic_m').value = data.lic_m || '';
+        document.getElementById('lic_y').value = data.lic_y || '';
+        document.getElementById('lic_num').value = data.lic_num || '';
+        updateAll();
+    }
+
+    let selectedProfileName = '';
+
+    function renderDropdown(filter) {
+        const dropdown = document.getElementById('profiles-dropdown');
+        const profiles = getProfiles();
+        const names = Object.keys(profiles);
+        const query = (filter || '').trim();
+        const filtered = query ? names.filter(n => n.includes(query)) : names;
+
+        if (names.length === 0) {
+            dropdown.innerHTML = '<div class="drop-empty">لا توجد بيانات محفوظة</div>';
+            return;
+        }
+        if (filtered.length === 0) {
+            dropdown.innerHTML = '<div class="drop-empty">لا توجد نتائج لـ "' + query + '"</div>';
+            return;
+        }
+
+        dropdown.innerHTML = filtered.map(name => {
+            const p = profiles[name];
+            const idNum = p.id_num || '';
+            const isSelected = name === selectedProfileName ? ' selected' : '';
+            return `<div class="drop-item${isSelected}" onclick="selectProfile('${name.replace(/'/g, "\\'")}')">
+                <span>${name}</span>
+                <span class="item-id">${idNum}</span>
+            </div>`;
+        }).join('');
+    }
+
+    function openDropdown() {
+        const dropdown = document.getElementById('profiles-dropdown');
+        const input = document.getElementById('profile-search');
+        renderDropdown(input.value);
+        dropdown.classList.add('show');
+    }
+
+    function closeDropdown() {
+        setTimeout(() => {
+            document.getElementById('profiles-dropdown').classList.remove('show');
+        }, 200);
+    }
+
+    function filterProfiles() {
+        const input = document.getElementById('profile-search');
+        renderDropdown(input.value);
+        document.getElementById('profiles-dropdown').classList.add('show');
+    }
+
+    function selectProfile(name) {
+        selectedProfileName = name;
+        document.getElementById('profile-search').value = name;
+        document.getElementById('profiles-dropdown').classList.remove('show');
+        const profiles = getProfiles();
+        if (profiles[name]) {
+            fillForm(profiles[name]);
+            showNotify('تم تحميل: ' + name);
+        }
+    }
+
+    function refreshProfilesList() {
+        selectedProfileName = '';
+        document.getElementById('profile-search').value = '';
+    }
+
+    function saveProfile() {
+        const name = document.getElementById('name').value.trim();
+        if (!name) return showNotify('أدخل الاسم أولاً');
+        const profiles = getProfiles();
+        if (profiles[name] && !confirm('يوجد شخص بهذا الاسم. هل تريد تحديث بياناته؟')) return;
+        profiles[name] = getFormData();
+        setProfiles(profiles);
+        selectedProfileName = name;
+        document.getElementById('profile-search').value = name;
+        showNotify('تم حفظ: ' + name);
+    }
+
+    function deleteProfile() {
+        const name = selectedProfileName || document.getElementById('profile-search').value.trim();
+        if (!name) return showNotify('اختر شخص أولاً');
+        const profiles = getProfiles();
+        if (!profiles[name]) return showNotify('هذا الشخص غير محفوظ');
+        if (!confirm('هل تريد حذف "' + name + '"؟')) return;
+        delete profiles[name];
+        setProfiles(profiles);
+        selectedProfileName = '';
+        document.getElementById('profile-search').value = '';
+        showNotify('تم حذف: ' + name);
+    }
+
+    function exportProfiles() {
+        const profiles = getProfiles();
+        if (Object.keys(profiles).length === 0) return showNotify('لا توجد بيانات محفوظة');
+        const blob = new Blob([JSON.stringify(profiles, null, 2)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'profiles.json';
+        a.click();
+        URL.revokeObjectURL(a.href);
+        showNotify('تم تصدير الملف');
+    }
+
+    function importProfiles(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const imported = JSON.parse(e.target.result);
+                const current = getProfiles();
+                const merged = Object.assign({}, current, imported);
+                setProfiles(merged);
+                refreshProfilesList();
+                showNotify('تم استيراد ' + Object.keys(imported).length + ' شخص');
+            } catch(err) {
+                showNotify('خطأ في قراءة الملف');
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    }
+
+    window.onload = function() {
+        renderGrid();
+        refreshProfilesList();
+        document.getElementById('profile-search').addEventListener('blur', closeDropdown);
+    };
 
 </script>
 </body> </html>
