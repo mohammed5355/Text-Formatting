@@ -17,6 +17,46 @@
             --copy-bg: #f4f6f9;
             --copy-card-bg: #ffffff;
             --copy-text: #333;
+            --bg: #f4f7fb;
+            --surface: #ffffff;
+            --surface-muted: #f8fafc;
+            --border: #dbe3ee;
+            --text: #172033;
+            --muted: #667085;
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #059669;
+            --danger: #dc2626;
+            --shadow: 0 18px 50px rgba(20, 30, 55, 0.12);
+            --body-start: #f8fbff;
+            --body-glow: rgba(37, 99, 235, 0.12);
+            --workspace-bg: rgba(255, 255, 255, 0.86);
+            --workspace-border: rgba(219, 227, 238, 0.9);
+            --input-bg: #ffffff;
+            --input-focus-bg: #fbfdff;
+            --placeholder: #9aa6b2;
+            --popover-bg: #ffffff;
+        }
+        body.dark-theme {
+            --bg: #0f172a;
+            --surface: #111827;
+            --surface-muted: #172033;
+            --border: #2d3b52;
+            --text: #e5e7eb;
+            --muted: #9ca3af;
+            --primary: #60a5fa;
+            --primary-dark: #3b82f6;
+            --success: #10b981;
+            --danger: #f87171;
+            --shadow: 0 18px 50px rgba(0, 0, 0, 0.34);
+            --body-start: #111827;
+            --body-glow: rgba(96, 165, 250, 0.14);
+            --workspace-bg: rgba(17, 24, 39, 0.9);
+            --workspace-border: rgba(45, 59, 82, 0.92);
+            --input-bg: #0f172a;
+            --input-focus-bg: #111827;
+            --placeholder: #6b7280;
+            --popover-bg: #111827;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f6fa; height: 100vh; display: flex; overflow: hidden; }
@@ -57,19 +97,408 @@
         .dash-title { font-size: 24px; color: #2c3e50; margin-bottom: 10px; }
         .dash-desc { color: #7f8c8d; font-size: 14px; line-height: 1.6; }
 
-        .fmt-wrapper { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 100%; overflow-y: auto; padding: 40px; display: flex; justify-content: center; }
-        .fmt-container { background: white; border-radius: 15px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); padding: 40px; max-width: 95%; width: 100%; height: fit-content; min-height: 800px; margin-bottom: 40px; }
-        .fmt-title { color: #667eea; text-align: center; margin-bottom: 30px; font-size: 28px; }
-        .fmt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-        .fmt-box-group { display: flex; flex-direction: column; }
-        .fmt-label { font-weight: bold; color: #333; margin-bottom: 10px; font-size: 16px; }
-        .fmt-textarea { width: 100%; height: 70vh; min-height: 600px; padding: 20px; border: 2px solid #e0e0e0; border-radius: 10px; font-family: 'Courier New', monospace; font-size: 16px; resize: vertical; transition: border-color 0.3s; }
-        .fmt-textarea:focus { outline: none; border-color: #667eea; }
-        .fmt-controls { display: flex; gap: 15px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
-        .fmt-btn { padding: 15px 30px; border: none; border-radius: 10px; font-size: 15px; font-weight: bold; cursor: pointer; transition: all 0.3s; color: white; background: #6b7280; }
-        .fmt-btn-primary { background: #4f46e5; border: 1px solid #4338ca; flex-basis: 100%; max-width: 400px; }
-        .fmt-btn-primary:hover { background: #4338ca; }
-        .fmt-btn:hover { transform: translateY(-2px); background: #4b5563; }
+        .fmt-wrapper {
+            height: 100vh;
+            overflow: hidden;
+            padding: 10px 16px;
+        }
+        .fmt-container {
+            width: 100%;
+            height: calc(100vh - 20px);
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .fmt-header {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 16px;
+            flex: 0 0 auto;
+            min-height: 46px;
+            padding: 0 2px;
+        }
+        .fmt-header-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .fmt-copyright {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .fmt-header-left {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            min-width: 0;
+        }
+        .theme-toggle {
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            background: var(--input-bg);
+            color: var(--text);
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+        }
+        .theme-toggle:hover {
+            transform: translateY(-1px);
+            border-color: #b8c5d8;
+            box-shadow: 0 8px 18px rgba(20, 30, 55, 0.08);
+        }
+        .theme-toggle svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+        }
+        .theme-toggle .theme-icon-sun,
+        body.dark-theme .theme-toggle .theme-icon-moon {
+            display: none;
+        }
+        body.dark-theme .theme-toggle .theme-icon-sun {
+            display: block;
+        }
+        .fmt-workspace {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            background: var(--workspace-bg);
+            border: 1px solid var(--workspace-border);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(16px);
+            overflow: hidden;
+        }
+        .fmt-grid {
+            position: relative;
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            min-height: 0;
+        }
+        .fmt-diff-center {
+            position: absolute;
+            top: 61px;
+            left: 50%;
+            z-index: 5;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 6px;
+            transform: translateX(-50%);
+            pointer-events: none;
+        }
+        .fmt-diff-center .fmt-btn,
+        .fmt-diff-center .fmt-diff-count {
+            pointer-events: auto;
+            white-space: nowrap;
+        }
+        .fmt-box-group {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            min-height: 0;
+            background: var(--surface);
+        }
+        .fmt-box-group + .fmt-box-group { border-right: 1px solid var(--border); }
+        .fmt-panel-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            min-height: 38px;
+            padding: 7px 14px;
+            background: var(--surface-muted);
+            border-bottom: 1px solid var(--border);
+        }
+        .fmt-panel-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 28px) minmax(150px, auto);
+            align-items: center;
+            gap: 6px;
+            flex: 0 0 auto;
+        }
+        .fmt-icon-btn {
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            background: var(--input-bg);
+            color: var(--text);
+            cursor: pointer;
+            transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, opacity 0.18s ease;
+        }
+        .fmt-icon-btn:hover:not(:disabled) {
+            border-color: #b8c5d8;
+            background: rgba(37, 99, 235, 0.08);
+        }
+        .fmt-icon-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.42;
+        }
+        .fmt-icon-btn svg {
+            width: 15px;
+            height: 15px;
+            stroke: currentColor;
+        }
+        .fmt-font-btn {
+            font-size: 17px;
+            font-weight: 900;
+            line-height: 1;
+        }
+        .fmt-label {
+            font-weight: 800;
+            color: var(--text);
+            font-size: 15px;
+        }
+        .fmt-meta {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+            text-align: start;
+            font-variant-numeric: tabular-nums;
+        }
+        .fmt-textarea {
+            width: 100%;
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-x: hidden;
+            overflow-y: scroll;
+            overscroll-behavior: contain;
+            scrollbar-gutter: stable;
+            padding: 20px 20px 64px;
+            border: 0;
+            background: transparent;
+            color: var(--text);
+            line-height: 1.9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 16px;
+            transition: background-color 0.2s, box-shadow 0.2s;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .fmt-textarea:empty::before {
+            content: attr(data-placeholder);
+            color: var(--placeholder);
+            pointer-events: none;
+        }
+        .fmt-textarea:focus {
+            outline: none;
+            background: var(--input-focus-bg);
+            box-shadow: inset 0 0 0 2px rgba(37, 99, 235, 0.22);
+        }
+        .fmt-textarea[aria-readonly="true"] { color: var(--text); }
+        .fmt-highlight,
+        .fmt-diff {
+            padding: 1px 4px;
+            border-radius: 5px;
+        }
+        .fmt-highlight {
+            background: #fef08a;
+            box-shadow: inset 0 -1px 0 rgba(133, 77, 14, 0.2);
+            cursor: pointer;
+        }
+        .fmt-diff {
+            position: relative;
+            background: #dbeafe;
+            color: #1e3a8a;
+            font-weight: 800;
+            box-shadow: inset 0 -1px 0 rgba(30, 58, 138, 0.2);
+            cursor: pointer;
+            transition: background-color 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
+        }
+        .fmt-diff-before {
+            background: #fee2e2;
+            color: #991b1b;
+            box-shadow: inset 0 -1px 0 rgba(153, 27, 27, 0.22);
+        }
+        .fmt-diff-after {
+            background: #fee2e2;
+            color: #991b1b;
+            box-shadow: inset 0 -1px 0 rgba(153, 27, 27, 0.22);
+        }
+        .fmt-diff-active {
+            color: #063726;
+            background: #bbf7d0;
+            box-shadow:
+                0 0 0 2px rgba(5, 150, 105, 0.28),
+                0 8px 18px rgba(5, 150, 105, 0.16);
+        }
+        .fmt-edit-popover {
+            position: fixed;
+            display: none;
+            z-index: 3000;
+            width: min(360px, calc(100vw - 24px));
+            padding: 10px;
+            border: 1px solid rgba(15, 23, 42, 0.14);
+            border-radius: 8px;
+            background: var(--popover-bg);
+            box-shadow: 0 18px 36px rgba(15, 23, 42, 0.2);
+        }
+        .fmt-edit-popover.show { display: block; }
+        .fmt-edit-input {
+            width: 100%;
+            min-height: 38px;
+            padding: 8px 10px;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            color: var(--text);
+            font-size: 14px;
+            direction: rtl;
+        }
+        .fmt-edit-input:focus {
+            outline: none;
+            border-color: #059669;
+            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.14);
+        }
+        .fmt-edit-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .fmt-edit-btn {
+            min-height: 34px;
+            padding: 6px 12px;
+            border: 0;
+            border-radius: 7px;
+            background: #059669;
+            color: #ffffff;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .fmt-edit-btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        .fmt-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 0;
+            background: transparent;
+            flex-wrap: nowrap;
+            min-width: 0;
+        }
+        .fmt-tool-group {
+            display: flex;
+            align-items: center;
+            flex-direction: row;
+            gap: 10px;
+            min-width: 0;
+        }
+        .fmt-panel-search {
+            padding: 8px 12px;
+            background: var(--surface-muted);
+            border-bottom: 1px solid var(--border);
+        }
+        .fmt-box-input .fmt-panel-search { padding-left: 190px; }
+        .fmt-box-output .fmt-panel-search { padding-right: 190px; }
+        .fmt-input {
+            width: 100%;
+            min-height: 34px;
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--input-bg);
+            color: var(--text);
+            font-size: 13px;
+            direction: rtl;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+        .fmt-input:focus {
+            outline: none;
+            border-color: rgba(37, 99, 235, 0.6);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+        .fmt-input::placeholder { color: #98a2b3; }
+        .fmt-btn-active {
+            border-color: rgba(37, 99, 235, 0.4);
+            background: rgba(37, 99, 235, 0.12);
+            color: var(--primary-dark);
+        }
+        .fmt-btn {
+            min-height: 34px;
+            padding: 6px 12px;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+            color: var(--text);
+            background: var(--input-bg);
+            white-space: nowrap;
+        }
+        .fmt-btn-primary {
+            color: white;
+            background: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 10px 22px rgba(37, 99, 235, 0.22);
+        }
+        .fmt-btn:hover {
+            transform: translateY(-1px);
+            border-color: #b8c5d8;
+            box-shadow: 0 8px 18px rgba(20, 30, 55, 0.08);
+        }
+        .fmt-btn-primary:hover {
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+        .fmt-btn-danger {
+            color: var(--danger);
+            border-color: rgba(220, 38, 38, 0.25);
+        }
+        .fmt-diff-count {
+            display: none;
+            align-items: center;
+            min-height: 34px;
+            padding: 6px 12px;
+            border: 1px solid rgba(30, 58, 138, 0.25);
+            border-radius: 7px;
+            background: #eff6ff;
+            color: #1e3a8a;
+            font-size: 13px;
+            font-weight: 800;
+        }
+        .fmt-diff-count.show { display: flex; }
+        .notification {
+            position: fixed;
+            top: 22px;
+            right: 50%;
+            transform: translateX(50%);
+            background: var(--success);
+            color: white;
+            padding: 12px 18px;
+            border-radius: 8px;
+            box-shadow: 0 14px 30px rgba(5, 150, 105, 0.22);
+            display: none;
+            animation: slideIn 0.22s ease;
+            z-index: 2000;
+            font-weight: 800;
+        }
+        .notification.show { display: block; }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translate(50%, -10px); }
+            to { opacity: 1; transform: translate(50%, 0); }
+        }
+    
 
         .fact-layout { display: flex; height: 100%; }
         .fact-sidebar { width: 350px; background: #1a252f; color: white; padding: 20px; display: flex; flex-direction: column; overflow-y: auto; border-left: 4px solid #3498db; }
@@ -87,10 +516,6 @@
         .hl-yellow { background-color: #f1c40f; color: #000; padding: 2px 0; border-radius: 3px; font-weight: normal; }
         .hl-green { background-color: #2ecc71; color: #fff; padding: 2px 4px; border-radius: 3px; font-weight: normal; }
         .hl-red { background-color: #e74c3c; color: #fff; padding: 2px 4px; border-radius: 3px; font-weight: normal; }
-
-        .notification { position: fixed; top: 20px; right: 100px; background: #10b981; color: white; padding: 15px 25px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); display: none; animation: slideIn 0.3s ease; z-index: 2000; }
-        .notification.show { display: block; }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
         .formula-wrapper {
             background-color: var(--copy-bg);
@@ -364,24 +789,102 @@
     <div id="view-formatting" class="view-panel">
         <div class="fmt-wrapper">
             <div class="fmt-container">
-                <h1 class="fmt-title">تنسيق النص</h1>
-                <div class="fmt-grid">
-                    <div class="fmt-box-group">
-                        <label class="fmt-label">النص الأصلي (من العدسة):</label>
-                        <textarea id="fmt-input" class="fmt-textarea" placeholder="الصق النص هنا..."></textarea>
+                <header class="fmt-header">
+                    <div class="fmt-header-right">
+                        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="تبديل الوضع الداكن" title="تبديل الوضع الداكن">
+                            <svg class="theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3 6.7 6.7 0 0 0 21 12.8Z"></path>
+                            </svg>
+                            <svg class="theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="4"></circle>
+                                <path d="M12 2v2"></path>
+                                <path d="M12 20v2"></path>
+                                <path d="m4.9 4.9 1.4 1.4"></path>
+                                <path d="m17.7 17.7 1.4 1.4"></path>
+                                <path d="M2 12h2"></path>
+                                <path d="M20 12h2"></path>
+                                <path d="m6.3 17.7-1.4 1.4"></path>
+                                <path d="m19.1 4.9-1.4 1.4"></path>
+                            </svg>
+                        </button>
                     </div>
-                    <div class="fmt-box-group">
-                        <label class="fmt-label">النص بعد التنسيق:</label>
-                        <textarea id="fmt-output" class="fmt-textarea" placeholder="" readonly></textarea>
+                    <div class="fmt-controls">
+                        <button onclick="fmtProcess()" class="fmt-btn fmt-btn-primary">معالجة شاملة</button>
+                        <button onclick="fmtRemoveBreaks()" class="fmt-btn">إزالة فواصل الأسطر</button>
+                        <button onclick="fmtRemoveSpaces()" class="fmt-btn">إزالة المسافات الزائدة</button>
+                        <button onclick="fmtCopy()" class="fmt-btn">نسخ النتيجة</button>
+                        <button onclick="fmtClear()" class="fmt-btn fmt-btn-danger">مسح الكل</button>
                     </div>
-                </div>
-                <div class="fmt-controls">
-                    <button onclick="fmtProcess()" class="fmt-btn fmt-btn-primary">معالجة شاملة</button>
-                    <button onclick="fmtRemoveBreaks()" class="fmt-btn">إزالة فواصل الأسطر</button>
-                    <button onclick="fmtRemoveSpaces()" class="fmt-btn">إزالة المسافات الزائدة</button>
-                    <button onclick="fmtCopy()" class="fmt-btn">نسخ النتيجة</button>
-                    <button onclick="fmtClear()" class="fmt-btn">مسح الكل</button>
-                </div>
+                    <div class="fmt-header-left">
+                        <div class="fmt-copyright">محمد المحيميد 2026</div>
+                    </div>
+                </header>
+                <main class="fmt-workspace">
+                    <div class="fmt-grid">
+                        <div class="fmt-diff-center">
+                            <button id="fmt-diff-btn" onclick="fmtToggleDiff()" class="fmt-btn">معاينة التعديلات</button>
+                            <span id="fmt-diff-count" class="fmt-diff-count">عدد التعديلات: 0</span>
+                        </div>
+                        <div class="fmt-box-group fmt-box-input">
+                            <div class="fmt-panel-head">
+                                <label id="fmt-input-label" for="fmt-input" class="fmt-label">النص الأصلي</label>
+                                <div class="fmt-panel-actions">
+                                    <button id="fmt-input-font-decrease" class="fmt-icon-btn fmt-font-btn" type="button" aria-label="تصغير الخط" title="تصغير الخط">−</button>
+                                    <button id="fmt-input-font-increase" class="fmt-icon-btn fmt-font-btn" type="button" aria-label="تكبير الخط" title="تكبير الخط">+</button>
+                                    <button id="fmt-input-undo" class="fmt-icon-btn" type="button" aria-label="تراجع" title="تراجع">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M9 14 4 9l5-5"></path>
+                                            <path d="M4 9h10a6 6 0 0 1 0 12h-2"></path>
+                                        </svg>
+                                    </button>
+                                    <button id="fmt-input-redo" class="fmt-icon-btn" type="button" aria-label="إعادة" title="إعادة">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="m15 14 5-5-5-5"></path>
+                                            <path d="M20 9H10a6 6 0 0 0 0 12h2"></path>
+                                        </svg>
+                                    </button>
+                                    <span id="fmt-input-count" class="fmt-meta">0 حرف  0 كلمة</span>
+                                </div>
+                            </div>
+                            <div class="fmt-tool-group fmt-panel-search">
+                                <label for="fmt-highlight-before" class="fmt-label">بحث</label>
+                                <input id="fmt-highlight-before" class="fmt-input" type="text" placeholder="للبحث عن أكثر من كلمة أو رمز ضع فاصلة بينها، مثال: مهم,عاجل الرموز: (،)
+
+                                ">
+                            </div>
+                            <div id="fmt-input" class="fmt-textarea" role="textbox" contenteditable="true" aria-labelledby="fmt-input-label" data-placeholder="الصق النص هنا..." data-raw-text=""></div>
+                        </div>
+                        <div class="fmt-box-group fmt-box-output">
+                            <div class="fmt-panel-head">
+                                <label id="fmt-output-label" for="fmt-output" class="fmt-label">النص بعد المعالجة</label>
+                                <div class="fmt-panel-actions">
+                                    <button id="fmt-output-font-decrease" class="fmt-icon-btn fmt-font-btn" type="button" aria-label="تصغير الخط" title="تصغير الخط">−</button>
+                                    <button id="fmt-output-font-increase" class="fmt-icon-btn fmt-font-btn" type="button" aria-label="تكبير الخط" title="تكبير الخط">+</button>
+                                    <button id="fmt-output-undo" class="fmt-icon-btn" type="button" aria-label="تراجع" title="تراجع">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M9 14 4 9l5-5"></path>
+                                            <path d="M4 9h10a6 6 0 0 1 0 12h-2"></path>
+                                        </svg>
+                                    </button>
+                                    <button id="fmt-output-redo" class="fmt-icon-btn" type="button" aria-label="إعادة" title="إعادة">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="m15 14 5-5-5-5"></path>
+                                            <path d="M20 9H10a6 6 0 0 0 0 12h2"></path>
+                                        </svg>
+                                    </button>
+                                    <span id="fmt-output-count" class="fmt-meta">0 حرف  0 كلمة</span>
+                                </div>
+                            </div>
+                            <div class="fmt-tool-group fmt-panel-search">
+                                <label for="fmt-highlight-after" class="fmt-label">بحث</label>
+                                <input id="fmt-highlight-after" class="fmt-input" type="text" placeholder="للبحث عن أكثر من كلمة أو رمز ضع فاصلة بينها، مثال: مهم,عاجل الرموز: (،)
+
+                                ">
+                            </div>
+                            <div id="fmt-output" class="fmt-textarea" role="textbox" contenteditable="true" aria-labelledby="fmt-output-label" data-raw-text=""></div>
+                        </div>
+                    </div>
+                </main>
             </div>
         </div>
     </div>
@@ -524,6 +1027,14 @@
 
 <div id="notify" class="notification">تم النسخ</div>
 
+<form id="fmt-edit-popover" class="fmt-edit-popover">
+    <input id="fmt-edit-input" class="fmt-edit-input" type="text" aria-label="النص البديل" placeholder="اكتب النص البديل">
+    <div class="fmt-edit-actions">
+        <button type="submit" class="fmt-edit-btn">استبدال</button>
+        <button type="button" id="fmt-edit-cancel" class="fmt-edit-btn fmt-edit-btn-secondary">إلغاء</button>
+    </div>
+</form>
+
 <script>
     function switchTab(id) {
         document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
@@ -539,8 +1050,637 @@
         setTimeout(() => n.classList.remove('show'), 2000);
     }
 
+    const fmtInput = document.getElementById('fmt-input');
+    const fmtOutput = document.getElementById('fmt-output');
+    const fmtInputCount = document.getElementById('fmt-input-count');
+    const fmtOutputCount = document.getElementById('fmt-output-count');
+    const fmtHighlightBefore = document.getElementById('fmt-highlight-before');
+    const fmtHighlightAfter = document.getElementById('fmt-highlight-after');
+    const fmtDiffBtn = document.getElementById('fmt-diff-btn');
+    const fmtDiffCount = document.getElementById('fmt-diff-count');
+    const fmtEditPopover = document.getElementById('fmt-edit-popover');
+    const fmtEditInput = document.getElementById('fmt-edit-input');
+    const fmtEditCancel = document.getElementById('fmt-edit-cancel');
+    const themeToggle = document.getElementById('theme-toggle');
+    const fmtInputUndo = document.getElementById('fmt-input-undo');
+    const fmtInputRedo = document.getElementById('fmt-input-redo');
+    const fmtOutputUndo = document.getElementById('fmt-output-undo');
+    const fmtOutputRedo = document.getElementById('fmt-output-redo');
+    const fmtInputFontDecrease = document.getElementById('fmt-input-font-decrease');
+    const fmtInputFontIncrease = document.getElementById('fmt-input-font-increase');
+    const fmtOutputFontDecrease = document.getElementById('fmt-output-font-decrease');
+    const fmtOutputFontIncrease = document.getElementById('fmt-output-font-increase');
+    let fmtDiffEnabled = false;
+    let fmtDiffPairs = [];
+    let fmtEditTarget = null;
+    let fmtEditObserver = null;
+    let fmtSyncingScroll = false;
+    const fmtHistory = new Map();
+    const fmtFontSize = new Map();
+    const fmtMinFontSize = 12;
+    const fmtMaxFontSize = 28;
+    const fmtDefaultFontSize = 16;
+
+    function fmtDebounce(fn, delay) {
+        let timerId;
+        return function(...args) {
+            clearTimeout(timerId);
+            timerId = setTimeout(() => fn.apply(this, args), delay);
+        };
+    }
+
+    function fmtSetTheme(isDark) {
+        document.body.classList.toggle('dark-theme', isDark);
+        themeToggle.setAttribute('aria-pressed', String(isDark));
+        themeToggle.title = isDark ? 'تبديل إلى الوضع الفاتح' : 'تبديل إلى الوضع الداكن';
+        themeToggle.setAttribute('aria-label', themeToggle.title);
+    }
+
+    function fmtLoadTheme() {
+        try {
+            return localStorage.getItem('fmt-theme') === 'dark';
+        } catch (err) {
+            return false;
+        }
+    }
+
+    function fmtSaveTheme(isDark) {
+        try {
+            localStorage.setItem('fmt-theme', isDark ? 'dark' : 'light');
+        } catch (err) {}
+    }
+
+    function fmtToggleTheme() {
+        const isDark = !document.body.classList.contains('dark-theme');
+        fmtSetTheme(isDark);
+        fmtSaveTheme(isDark);
+    }
+
+    function fmtCountLabel(value) {
+        const characters = value.length.toLocaleString('ar-SA');
+        const words = fmtTokenize(value).length.toLocaleString('ar-SA');
+        return `${characters} حرف  ${words} كلمة`;
+    }
+
+    function fmtUpdateCounts() {
+        fmtInputCount.textContent = fmtCountLabel(fmtGetText(fmtInput));
+        fmtOutputCount.textContent = fmtCountLabel(fmtGetText(fmtOutput));
+    }
+
+    function fmtEscapeHtml(value) {
+        return value.replace(/[&<>"']/g, ch => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        })[ch]);
+    }
+
+    function fmtEscapeRegExp(value) {
+        return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    function fmtSplitWords(value) {
+        return value.split(/[,،]/).map(word => word.trim()).filter(Boolean);
+    }
+
+    function fmtReadDomText(el) {
+        return el.innerText.replace(/\n$/, '');
+    }
+
+    function fmtSyncRawText(el) {
+        el.dataset.rawText = fmtReadDomText(el);
+    }
+
+    function fmtGetText(el) {
+        if (el.hasAttribute('data-raw-text')) {
+            return el.dataset.rawText || '';
+        }
+        return fmtReadDomText(el);
+    }
+
+    function fmtSetPlainText(el, text) {
+        el.dataset.rawText = text;
+        el.textContent = text;
+    }
+
+    function fmtInitFontControls(el, decreaseBtn, increaseBtn) {
+        fmtFontSize.set(el, {
+            size: fmtDefaultFontSize,
+            decreaseBtn,
+            increaseBtn
+        });
+        fmtApplyFontSize(el);
+    }
+
+    function fmtApplyFontSize(el) {
+        const state = fmtFontSize.get(el);
+        if (!state) return;
+        el.style.fontSize = `${state.size}px`;
+        state.decreaseBtn.disabled = state.size <= fmtMinFontSize;
+        state.increaseBtn.disabled = state.size >= fmtMaxFontSize;
+    }
+
+    function fmtChangeFontSize(el, delta) {
+        const state = fmtFontSize.get(el);
+        if (!state) return;
+        state.size = Math.min(fmtMaxFontSize, Math.max(fmtMinFontSize, state.size + delta));
+        fmtApplyFontSize(el);
+    }
+
+    function fmtSyncScroll(source, target) {
+        if (!fmtDiffEnabled) return;
+        if (fmtSyncingScroll) return;
+        const sourceMax = source.scrollHeight - source.clientHeight;
+        const targetMax = target.scrollHeight - target.clientHeight;
+        if (sourceMax <= 0 || targetMax <= 0) return;
+        fmtSyncingScroll = true;
+        target.scrollTop = (source.scrollTop / sourceMax) * targetMax;
+        requestAnimationFrame(() => {
+            fmtSyncingScroll = false;
+        });
+    }
+
+    function fmtMoveCaretToEnd(el) {
+        el.focus();
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        range.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
+
+    function getCaretOffset(element) {
+        const selection = window.getSelection();
+        if (!selection.rangeCount) return 0;
+
+        const range = selection.getRangeAt(0);
+        if (!element.contains(range.startContainer)) return 0;
+
+        let offset = 0;
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+        let node;
+        while ((node = walker.nextNode())) {
+            if (node === range.startContainer) {
+                return offset + range.startOffset;
+            }
+            offset += node.textContent.length;
+        }
+
+        return offset;
+    }
+
+    function setCaretOffset(element, offset) {
+        element.focus();
+        const selection = window.getSelection();
+        const range = document.createRange();
+        const targetOffset = Math.max(0, offset);
+        let remaining = targetOffset;
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+        let node;
+
+        while ((node = walker.nextNode())) {
+            const length = node.textContent.length;
+            if (remaining <= length) {
+                range.setStart(node, remaining);
+                range.collapse(true);
+                selection.removeAllRanges();
+                selection.addRange(range);
+                return;
+            }
+            remaining -= length;
+        }
+
+        range.selectNodeContents(element);
+        range.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
+
+    function fmtInitHistory(el, undoBtn, redoBtn) {
+        fmtHistory.set(el, {
+            undoStack: [fmtGetText(el)],
+            redoStack: [],
+            undoBtn,
+            redoBtn,
+            applying: false
+        });
+        fmtUpdateHistoryButtons(el);
+    }
+
+    function fmtUpdateHistoryButtons(el) {
+        const state = fmtHistory.get(el);
+        if (!state) return;
+        state.undoBtn.disabled = state.undoStack.length <= 1;
+        state.redoBtn.disabled = state.redoStack.length === 0;
+    }
+
+    function fmtRecordHistory(el) {
+        const state = fmtHistory.get(el);
+        if (!state || state.applying) return;
+        const text = fmtGetText(el);
+        if (state.undoStack[state.undoStack.length - 1] === text) {
+            fmtUpdateHistoryButtons(el);
+            return;
+        }
+        state.undoStack.push(text);
+        if (state.undoStack.length > 100) state.undoStack.shift();
+        state.redoStack = [];
+        fmtUpdateHistoryButtons(el);
+    }
+
+    function fmtApplyHistory(el, text) {
+        const state = fmtHistory.get(el);
+        if (!state) return;
+        state.applying = true;
+        try {
+            fmtSetPlainText(el, text);
+            fmtRenderHighlights();
+            fmtMoveCaretToEnd(el);
+            fmtUpdateHistoryButtons(el);
+        } finally {
+            setTimeout(() => {
+                state.applying = false;
+            }, 0);
+        }
+    }
+
+    function fmtUndo(el) {
+        const state = fmtHistory.get(el);
+        if (!state || state.undoStack.length <= 1) return;
+        state.redoStack.push(state.undoStack.pop());
+        fmtApplyHistory(el, state.undoStack[state.undoStack.length - 1]);
+    }
+
+    function fmtRedo(el) {
+        const state = fmtHistory.get(el);
+        if (!state || !state.redoStack.length) return;
+        const text = state.redoStack.pop();
+        state.undoStack.push(text);
+        fmtApplyHistory(el, text);
+    }
+
+    function fmtPastePlainText(event) {
+        event.preventDefault();
+        const text = event.clipboardData.getData('text/plain');
+        if (!text) return;
+        if (!document.execCommand('insertText', false, text)) {
+            const selection = window.getSelection();
+            if (!selection.rangeCount) return;
+            const range = selection.getRangeAt(0);
+            range.deleteContents();
+            const textNode = document.createTextNode(text);
+            range.insertNode(textNode);
+            range.setStartAfter(textNode);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+        fmtSyncRawText(event.currentTarget);
+        fmtUpdateCounts();
+        fmtUpdateDiffCount();
+        fmtRecordHistory(event.currentTarget);
+        fmtRenderHighlights();
+    }
+
+    function fmtTokenize(value) {
+        const tokens = [];
+        value.replace(/\S+/g, (word, index) => {
+            tokens.push({
+                word,
+                key: word.toLocaleLowerCase('ar-SA'),
+                start: index,
+                end: index + word.length
+            });
+            return word;
+        });
+        return tokens;
+    }
+
+    function fmtBuildDiffPairs(inputText, outputText) {
+        if (!fmtDiffEnabled || (!inputText && !outputText)) return [];
+        const before = fmtTokenize(inputText);
+        const after = fmtTokenize(outputText);
+        if (!before.length && !after.length) return [];
+
+        const rows = before.length + 1;
+        const cols = after.length + 1;
+        const table = Array.from({ length: rows }, () => Array(cols).fill(0));
+
+        for (let i = before.length - 1; i >= 0; i--) {
+            for (let j = after.length - 1; j >= 0; j--) {
+                table[i][j] = before[i].key === after[j].key
+                    ? table[i + 1][j + 1] + 1
+                    : Math.max(table[i + 1][j], table[i][j + 1]);
+            }
+        }
+
+        const pairs = [];
+        let i = 0;
+        let j = 0;
+        let beforeRun = [];
+        let afterRun = [];
+
+        function flush() {
+            if (!beforeRun.length && !afterRun.length) return;
+            const id = pairs.length + 1;
+            pairs.push({
+                id,
+                before: beforeRun.length ? {
+                    start: beforeRun[0].start,
+                    end: beforeRun[beforeRun.length - 1].end,
+                    text: inputText.slice(beforeRun[0].start, beforeRun[beforeRun.length - 1].end)
+                } : null,
+                after: afterRun.length ? {
+                    start: afterRun[0].start,
+                    end: afterRun[afterRun.length - 1].end,
+                    text: outputText.slice(afterRun[0].start, afterRun[afterRun.length - 1].end)
+                } : null
+            });
+            beforeRun = [];
+            afterRun = [];
+        }
+
+        while (i < before.length && j < after.length) {
+            if (before[i].key === after[j].key) {
+                flush();
+                i++;
+                j++;
+            } else if (table[i + 1][j] >= table[i][j + 1]) {
+                beforeRun.push(before[i]);
+                i++;
+            } else {
+                afterRun.push(after[j]);
+                j++;
+            }
+        }
+        while (i < before.length) beforeRun.push(before[i++]);
+        while (j < after.length) afterRun.push(after[j++]);
+        flush();
+
+        return pairs;
+    }
+
+    function fmtDiffTotal() {
+        if (!fmtDiffEnabled) return 0;
+        return fmtDiffPairs.length;
+    }
+
+    function fmtDiffChangePercent(inputText, outputText) {
+        if (!fmtDiffEnabled) return 0;
+        const inputWords = fmtTokenize(inputText);
+        const outputWords = fmtTokenize(outputText);
+        const totalWords = Math.max(inputWords.length, outputWords.length);
+        if (!totalWords) return 0;
+        const changedWords = fmtDiffPairs.reduce((sum, pair) => {
+            const beforeCount = pair.before ? fmtTokenize(pair.before.text).length : 0;
+            const afterCount = pair.after ? fmtTokenize(pair.after.text).length : 0;
+            return sum + Math.max(beforeCount, afterCount);
+        }, 0);
+        return Math.min(100, Math.round((changedWords / totalWords) * 100));
+    }
+
+    function fmtUpdateDiffCount() {
+        const inputText = fmtGetText(fmtInput);
+        const outputText = fmtGetText(fmtOutput);
+        if (fmtDiffEnabled) {
+            fmtDiffPairs = fmtBuildDiffPairs(inputText, outputText);
+        }
+        const total = fmtDiffTotal();
+        const percent = fmtDiffChangePercent(inputText, outputText).toLocaleString('ar-SA');
+        fmtDiffCount.textContent = `عدد التعديلات: ${total.toLocaleString('ar-SA')} • نسبة التغيير: ${percent}٪`;
+        fmtDiffCount.classList.toggle('show', fmtDiffEnabled);
+    }
+
+    function fmtDiffSegmentsForBox(type) {
+        if (!fmtDiffEnabled) return [];
+        return fmtDiffPairs
+            .map(pair => {
+                const side = type === 'input' ? pair.before : pair.after;
+                if (!side) return null;
+                return {
+                    ...side,
+                    id: pair.id,
+                    label: pair.id.toLocaleString('ar-SA'),
+                    side: type === 'input' ? 'before' : 'after'
+                };
+            })
+            .filter(Boolean);
+    }
+
+    function fmtTermsForBox(type) {
+        const terms = [];
+        const highlightSource = type === 'input' ? fmtHighlightBefore : fmtHighlightAfter;
+        fmtSplitWords(highlightSource.value).forEach(word => terms.push({ word, type: 'highlight' }));
+        const unique = [];
+        const seen = new Set();
+        terms
+            .filter(item => item.word)
+            .sort((a, b) => b.word.length - a.word.length)
+            .forEach(item => {
+                const key = item.word.toLocaleLowerCase('ar-SA');
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    unique.push(item);
+                }
+            });
+        return unique;
+    }
+
+    function fmtRenderBox(el, text, terms, diffSegments = []) {
+        const shouldRestoreCaret = el === document.activeElement;
+        const caretOffset = shouldRestoreCaret ? getCaretOffset(el) : 0;
+        const restoreCaret = () => {
+            if (shouldRestoreCaret) setCaretOffset(el, caretOffset);
+        };
+        el.dataset.rawText = text;
+
+        if (!text) {
+            el.innerHTML = '';
+            restoreCaret();
+            return;
+        }
+        if (!terms.length && !diffSegments.length) {
+            fmtSetPlainText(el, text);
+            restoreCaret();
+            return;
+        }
+        const markers = [];
+        diffSegments.forEach(segment => {
+            markers.push({
+                start: segment.start,
+                end: segment.end,
+                type: 'diff',
+                id: segment.id,
+                label: segment.label,
+                side: segment.side
+            });
+        });
+        if (terms.length) {
+            const pattern = terms.map(item => fmtEscapeRegExp(item.word)).join('|');
+            const termRegex = new RegExp(pattern, 'giu');
+            let match;
+            while ((match = termRegex.exec(text)) !== null) {
+                const coveredByDiff = diffSegments.some(segment => match.index < segment.end && match.index + match[0].length > segment.start);
+                if (!coveredByDiff) {
+                    markers.push({
+                        start: match.index,
+                        end: match.index + match[0].length,
+                        type: 'highlight'
+                    });
+                }
+            }
+        }
+        markers.sort((a, b) => a.start - b.start || b.end - a.end);
+        let html = '';
+        let lastIndex = 0;
+        markers.forEach(marker => {
+            if (marker.start < lastIndex) return;
+            html += fmtEscapeHtml(text.slice(lastIndex, marker.start));
+            const value = fmtEscapeHtml(text.slice(marker.start, marker.end));
+            if (marker.type === 'diff') {
+                const sideClass = marker.side === 'before' ? 'fmt-diff-before' : 'fmt-diff-after';
+                html += `<mark class="fmt-diff ${sideClass}" data-diff-id="${marker.id}" data-diff-label="${marker.label}" data-start="${marker.start}" data-end="${marker.end}" tabindex="0">${value}</mark>`;
+            } else {
+                html += `<mark class="fmt-highlight" data-start="${marker.start}" data-end="${marker.end}" tabindex="0">${value}</mark>`;
+            }
+            lastIndex = marker.end;
+        });
+        html += fmtEscapeHtml(text.slice(lastIndex));
+        el.innerHTML = html;
+        restoreCaret();
+    }
+
+    function fmtMarkActiveDiff(id) {
+        document.querySelectorAll('.fmt-diff').forEach(el => {
+            el.classList.toggle('fmt-diff-active', el.dataset.diffId === String(id));
+        });
+    }
+
+    function fmtClearActiveDiff() {
+        document.querySelectorAll('.fmt-diff-active').forEach(el => el.classList.remove('fmt-diff-active'));
+    }
+
+    function fmtScrollDiffMate(id, currentEl) {
+        const mate = Array.from(document.querySelectorAll(`.fmt-diff[data-diff-id="${id}"]`)).find(el => el !== currentEl);
+        if (mate) mate.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+
+    function fmtHideEditPopover() {
+        if (fmtEditObserver) {
+            fmtEditObserver.disconnect();
+            fmtEditObserver = null;
+        }
+        fmtEditTarget = null;
+        fmtEditPopover.classList.remove('show');
+    }
+
+    function fmtHandleEditorBlur(event) {
+        if (fmtEditPopover.contains(event.relatedTarget)) return;
+        fmtRenderHighlights();
+    }
+
+    function fmtPositionEditPopover(mark) {
+        const rect = mark.getBoundingClientRect();
+        const margin = 12;
+        const width = Math.min(360, window.innerWidth - margin * 2);
+        fmtEditPopover.style.width = `${width}px`;
+        const top = Math.min(window.innerHeight - fmtEditPopover.offsetHeight - margin, rect.bottom + 8);
+        const left = Math.min(window.innerWidth - width - margin, Math.max(margin, rect.left + (rect.width / 2) - (width / 2)));
+        fmtEditPopover.style.top = `${Math.max(margin, top)}px`;
+        fmtEditPopover.style.left = `${left}px`;
+    }
+
+    function fmtShowEditPopover(mark) {
+        const box = mark.closest('.fmt-textarea');
+        if (!box) return;
+        if (fmtEditObserver) {
+            fmtEditObserver.disconnect();
+            fmtEditObserver = null;
+        }
+        fmtEditTarget = {
+            box,
+            start: Number(mark.dataset.start),
+            end: Number(mark.dataset.end)
+        };
+        fmtEditInput.value = mark.innerText;
+        fmtEditPopover.classList.add('show');
+        fmtPositionEditPopover(mark);
+        fmtEditInput.focus();
+        fmtEditInput.select();
+        fmtEditObserver = new IntersectionObserver(entries => {
+            if (!entries[0].isIntersecting) {
+                fmtHideEditPopover();
+            }
+        });
+        fmtEditObserver.observe(mark);
+    }
+
+    function fmtReplaceEditTarget() {
+        if (!fmtEditTarget) return;
+        const { box, start, end } = fmtEditTarget;
+        const text = fmtGetText(box);
+        const replacement = fmtEditInput.value;
+        fmtSetPlainText(box, text.slice(0, start) + replacement + text.slice(end));
+        fmtRecordHistory(box);
+        fmtHideEditPopover();
+        fmtRenderHighlights();
+        showNotify('تم الاستبدال');
+    }
+
+    function fmtBindDiffMarks() {
+        document.querySelectorAll('.fmt-diff').forEach(mark => {
+            mark.addEventListener('mouseenter', () => fmtMarkActiveDiff(mark.dataset.diffId));
+            mark.addEventListener('mouseleave', fmtClearActiveDiff);
+            mark.addEventListener('focus', () => fmtMarkActiveDiff(mark.dataset.diffId));
+            mark.addEventListener('blur', fmtClearActiveDiff);
+            mark.addEventListener('mousedown', event => event.preventDefault());
+            mark.addEventListener('click', event => {
+                event.preventDefault();
+                fmtShowEditPopover(mark);
+            });
+        });
+        document.querySelectorAll('.fmt-highlight').forEach(mark => {
+            mark.addEventListener('mousedown', event => event.preventDefault());
+            mark.addEventListener('click', event => {
+                event.preventDefault();
+                fmtShowEditPopover(mark);
+            });
+        });
+    }
+
+    function fmtRenderHighlights() {
+        const inputText = fmtGetText(fmtInput);
+        const outputText = fmtGetText(fmtOutput);
+        fmtDiffPairs = fmtBuildDiffPairs(inputText, outputText);
+        fmtRenderBox(fmtInput, inputText, fmtTermsForBox('input'), fmtDiffSegmentsForBox('input'));
+        fmtRenderBox(fmtOutput, outputText, fmtTermsForBox('output'), fmtDiffSegmentsForBox('output'));
+        fmtBindDiffMarks();
+        fmtUpdateCounts();
+        fmtUpdateDiffCount();
+    }
+
+    function fmtSetOutput(text) {
+        fmtSetPlainText(fmtOutput, text);
+        fmtRecordHistory(fmtOutput);
+        fmtRenderHighlights();
+    }
+
+    function fmtToggleDiff() {
+        if (!fmtDiffEnabled && (!fmtGetText(fmtInput).trim() || !fmtGetText(fmtOutput).trim())) return;
+        fmtDiffEnabled = !fmtDiffEnabled;
+        fmtDiffBtn.classList.toggle('fmt-btn-active', fmtDiffEnabled);
+        if (!fmtDiffEnabled) {
+            fmtClearActiveDiff();
+            fmtHideEditPopover();
+        }
+        fmtRenderHighlights();
+    }
+
     function fmtProcess() {
-        let t = document.getElementById('fmt-input').value;
+        let t = fmtGetText(fmtInput);
         if (!t) return showNotify('الرجاء لصق النص أولاً');
         t = t.replace(/\n/g, " ");
         t = t.replace(/\s+([.,:;؟!])/g, '$1').replace(/(\(|\[|\{)\s+/g, '$1').replace(/\s+(\)|\]|\})/g, '$1').replace(/([\u0621-\u064A\u0671-\u06D3])\s*,\s*([\u0621-\u064A\u0671-\u06D3])/g, '$1، $2');
@@ -550,13 +1690,16 @@
             var first = parts[0], last = parts[parts.length - 1];
             if (first.length < 3 && parts.slice(1).every(function(p) { return p.length === 3; })) return m;
             var rev = parts.slice().reverse();
-            if (rev[0].length < 3 && rev.slice(1).every(function(p) { return p.length === 3; })) {
-                return rev.join(m.match(/[,\u060C]/)[0]);
+            var revCorrect = rev[0].length < 3 && rev.slice(1).every(function(p) { return p.length === 3; });
+            if (revCorrect) {
+                var sep = m.match(/[,\u060C]/)[0];
+                return rev.join(sep);
             }
             var zeroChars = '0\u0660\u06F0';
             if (parts.length >= 2 && first.length === 3 && last.length === 3) {
                 if (zeroChars.indexOf(first[0]) !== -1 && zeroChars.indexOf(last[0]) === -1) {
-                    return parts.reverse().join(m.match(/[,\u060C]/)[0]);
+                    var sep = m.match(/[,\u060C]/)[0];
+                    return parts.reverse().join(sep);
                 }
             }
             return m;
@@ -573,23 +1716,101 @@
         });
         t = t.replace(new RegExp(`(${digit}+)([-/\\\\])(${digit}+)`, 'g'), (m,n1,s,n2) => n2+s+n1);
         placeholders.forEach((p,i) => t = t.replace(p, dates[i]));
-        document.getElementById('fmt-output').value = t.replace(/\s+/g, " ").trim();
+        fmtSetOutput(t.replace(/\s+/g, " ").trim());
     }
+
     function fmtRemoveBreaks() {
-        document.getElementById('fmt-output').value = document.getElementById('fmt-input').value.replace(/\n/g, " ").replace(/\s+/g, " ").trim();
+        fmtSetOutput(fmtGetText(fmtInput).replace(/\n/g, " ").replace(/\s+/g, " ").trim());
     }
+
     function fmtRemoveSpaces() {
-        document.getElementById('fmt-output').value = document.getElementById('fmt-input').value.replace(/\s+/g, " ").trim();
+        fmtSetOutput(fmtGetText(fmtInput).replace(/\s+/g, " ").trim());
     }
-    function fmtCopy() {
-        const el = document.getElementById('fmt-output');
-        if(!el.value) return showNotify('لا يوجد نص');
-        el.select(); document.execCommand('copy'); showNotify('تم النسخ');
+
+    async function fmtCopy() {
+        const text = fmtGetText(fmtOutput);
+        if(!text) return showNotify('لا يوجد نص');
+        try {
+            await navigator.clipboard.writeText(text);
+        } catch (err) {
+            const range = document.createRange();
+            range.selectNodeContents(fmtOutput);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            document.execCommand('copy');
+            selection.removeAllRanges();
+        }
+        showNotify('تم النسخ');
     }
+
     function fmtClear() {
-        document.getElementById('fmt-input').value = '';
-        document.getElementById('fmt-output').value = '';
+        fmtSetPlainText(fmtInput, '');
+        fmtSetPlainText(fmtOutput, '');
+        fmtHighlightBefore.value = '';
+        fmtHighlightAfter.value = '';
+        fmtDiffPairs = [];
+        fmtClearActiveDiff();
+        fmtHideEditPopover();
+        fmtRecordHistory(fmtInput);
+        fmtRecordHistory(fmtOutput);
+        fmtUpdateCounts();
+        fmtUpdateDiffCount();
     }
+
+    const fmtUpdateDiffCountDebounced = fmtDebounce(fmtUpdateDiffCount, 300);
+    const fmtRecordInputHistoryDebounced = fmtDebounce(() => fmtRecordHistory(fmtInput), 500);
+    const fmtRecordOutputHistoryDebounced = fmtDebounce(() => fmtRecordHistory(fmtOutput), 500);
+
+    fmtEditPopover.addEventListener('submit', event => {
+        event.preventDefault();
+        fmtReplaceEditTarget();
+    });
+    fmtEditCancel.addEventListener('click', fmtHideEditPopover);
+    document.addEventListener('click', event => {
+        if (!fmtEditPopover.classList.contains('show')) return;
+        if (fmtEditPopover.contains(event.target) || event.target.closest('.fmt-diff, .fmt-highlight')) return;
+        fmtHideEditPopover();
+    });
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') fmtHideEditPopover();
+    });
+    window.addEventListener('resize', fmtHideEditPopover);
+    fmtInitHistory(fmtInput, fmtInputUndo, fmtInputRedo);
+    fmtInitHistory(fmtOutput, fmtOutputUndo, fmtOutputRedo);
+    fmtInitFontControls(fmtInput, fmtInputFontDecrease, fmtInputFontIncrease);
+    fmtInitFontControls(fmtOutput, fmtOutputFontDecrease, fmtOutputFontIncrease);
+    fmtInputFontDecrease.addEventListener('click', () => fmtChangeFontSize(fmtInput, -1));
+    fmtInputFontIncrease.addEventListener('click', () => fmtChangeFontSize(fmtInput, 1));
+    fmtOutputFontDecrease.addEventListener('click', () => fmtChangeFontSize(fmtOutput, -1));
+    fmtOutputFontIncrease.addEventListener('click', () => fmtChangeFontSize(fmtOutput, 1));
+    fmtInputUndo.addEventListener('click', () => fmtUndo(fmtInput));
+    fmtInputRedo.addEventListener('click', () => fmtRedo(fmtInput));
+    fmtOutputUndo.addEventListener('click', () => fmtUndo(fmtOutput));
+    fmtOutputRedo.addEventListener('click', () => fmtRedo(fmtOutput));
+    fmtInput.addEventListener('blur', fmtHandleEditorBlur);
+    fmtInput.addEventListener('input', () => {
+        fmtSyncRawText(fmtInput);
+        fmtUpdateCounts();
+        fmtUpdateDiffCountDebounced();
+        fmtRecordInputHistoryDebounced();
+    });
+    fmtInput.addEventListener('paste', fmtPastePlainText);
+    fmtInput.addEventListener('scroll', () => fmtSyncScroll(fmtInput, fmtOutput));
+    fmtOutput.addEventListener('blur', fmtHandleEditorBlur);
+    fmtOutput.addEventListener('input', () => {
+        fmtSyncRawText(fmtOutput);
+        fmtUpdateCounts();
+        fmtUpdateDiffCountDebounced();
+        fmtRecordOutputHistoryDebounced();
+    });
+    fmtOutput.addEventListener('paste', fmtPastePlainText);
+    fmtOutput.addEventListener('scroll', () => fmtSyncScroll(fmtOutput, fmtInput));
+    fmtHighlightBefore.addEventListener('input', fmtRenderHighlights);
+    fmtHighlightAfter.addEventListener('input', fmtRenderHighlights);
+    themeToggle.addEventListener('click', fmtToggleTheme);
+    fmtSetTheme(fmtLoadTheme());
+    fmtUpdateCounts();
 
     document.getElementById('fact-editor').addEventListener('paste', function(e) {
         e.preventDefault();
