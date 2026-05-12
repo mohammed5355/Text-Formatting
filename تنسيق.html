@@ -119,6 +119,7 @@
                 linear-gradient(rgba(99, 112, 131, 0.055) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(99, 112, 131, 0.045) 1px, transparent 1px);
             background-size: 44px 44px;
+            -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.42), transparent 70%);
             mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.42), transparent 70%);
         }
 
@@ -184,6 +185,7 @@
             border-radius: 8px;
             background: var(--surface-raised);
             box-shadow: var(--shadow-soft);
+            -webkit-backdrop-filter: blur(18px);
             backdrop-filter: blur(18px);
         }
 
@@ -207,6 +209,28 @@
             justify-content: flex-end;
             gap: 10px;
             min-width: 0;
+        }
+
+        .fmt-header-left #fmt-compare-mode {
+            border-color: rgba(13, 148, 136, 0.28);
+            background: var(--accent-soft);
+            color: var(--accent-dark);
+        }
+
+        .fmt-header-left #fmt-compare-mode:hover {
+            border-color: var(--accent);
+            color: var(--accent-dark);
+            box-shadow: 0 10px 22px rgba(13, 148, 136, 0.16);
+        }
+
+        .fmt-header-left #fmt-compare-mode.fmt-btn-active {
+            border-color: var(--accent);
+            background: linear-gradient(180deg, var(--accent) 0%, var(--accent-dark) 100%);
+            color: #ffffff;
+        }
+
+        .fmt-header-left #fmt-compare-mode.fmt-btn-active:hover {
+            color: #ffffff;
         }
 
         .theme-toggle {
@@ -265,6 +289,7 @@
             border: 1px solid var(--workspace-border);
             border-radius: 8px;
             box-shadow: var(--shadow);
+            -webkit-backdrop-filter: blur(18px);
             backdrop-filter: blur(18px);
             overflow: hidden;
         }
@@ -293,6 +318,7 @@
             border-radius: 8px;
             background: var(--toolbar-bg);
             box-shadow: var(--shadow-soft);
+            -webkit-backdrop-filter: blur(14px);
             backdrop-filter: blur(14px);
         }
 
@@ -523,6 +549,25 @@
             color: #fecdd3;
         }
 
+        body.fmt-compare-active .fmt-diff-before {
+            background: var(--danger-soft);
+            color: #9f1239;
+        }
+
+        body.fmt-compare-active .fmt-diff-after {
+            background: var(--accent-soft);
+            color: #065f56;
+            box-shadow: inset 0 -1px 0 rgba(13, 148, 136, 0.22);
+        }
+
+        body.dark-theme.fmt-compare-active .fmt-diff-before {
+            color: #fecdd3;
+        }
+
+        body.dark-theme.fmt-compare-active .fmt-diff-after {
+            color: #b8fff4;
+        }
+
         .fmt-diff-active {
             color: #053b35;
             background: var(--accent-soft);
@@ -545,6 +590,7 @@
             border-radius: 8px;
             background: var(--popover-bg);
             box-shadow: 0 24px 48px rgba(20, 30, 45, 0.22);
+            -webkit-backdrop-filter: blur(18px);
             backdrop-filter: blur(18px);
         }
 
@@ -748,6 +794,17 @@
             box-shadow: 0 10px 22px rgba(220, 38, 38, 0.18);
         }
 
+        body.fmt-compare-active .fmt-box-input .fmt-panel-head,
+        body.fmt-compare-active .fmt-box-output .fmt-panel-head {
+            background:
+                linear-gradient(180deg, var(--accent-soft) 0%, var(--surface) 100%);
+        }
+
+        body.fmt-compare-active .fmt-box-input .fmt-label,
+        body.fmt-compare-active .fmt-box-output .fmt-label {
+            color: var(--accent-dark);
+        }
+
         .fmt-diff-count {
             display: none;
             align-items: center;
@@ -832,6 +889,7 @@
                         <button onclick="fmtClear()" class="fmt-btn fmt-btn-danger">مسح الكل</button>
                     </div>
                     <div class="fmt-header-left">
+                        <button id="fmt-compare-mode" onclick="fmtCompareTexts()" class="fmt-btn" type="button" aria-pressed="false">مقارنة بين نصين</button>
                         <div class="app-copyright">محمد المحيميد 2026</div>
                     </div>
                 </header>
@@ -924,6 +982,9 @@
     const fmtHighlightAfter = document.getElementById('fmt-highlight-after');
     const fmtDiffBtn = document.getElementById('fmt-diff-btn');
     const fmtDiffCount = document.getElementById('fmt-diff-count');
+    const fmtCompareModeBtn = document.getElementById('fmt-compare-mode');
+    const fmtInputLabel = document.getElementById('fmt-input-label');
+    const fmtOutputLabel = document.getElementById('fmt-output-label');
     const fmtEditPopover = document.getElementById('fmt-edit-popover');
     const fmtEditInput = document.getElementById('fmt-edit-input');
     const fmtEditCancel = document.getElementById('fmt-edit-cancel');
@@ -937,6 +998,7 @@
     const fmtOutputFontDecrease = document.getElementById('fmt-output-font-decrease');
     const fmtOutputFontIncrease = document.getElementById('fmt-output-font-increase');
     let fmtDiffEnabled = false;
+    let fmtCompareModeEnabled = false;
     let fmtDiffPairs = [];
     let fmtEditTarget = null;
     let fmtEditObserver = null;
@@ -980,6 +1042,33 @@
         const isDark = !document.body.classList.contains('dark-theme');
         fmtSetTheme(isDark);
         fmtSaveTheme(isDark);
+    }
+
+    function fmtSetCompareMode(isEnabled) {
+        fmtCompareModeEnabled = isEnabled;
+        document.body.classList.toggle('fmt-compare-active', isEnabled);
+        fmtCompareModeBtn.classList.toggle('fmt-btn-active', isEnabled);
+        fmtCompareModeBtn.setAttribute('aria-pressed', String(isEnabled));
+        fmtInputLabel.textContent = isEnabled ? 'النص الأول' : 'النص الأصلي';
+        fmtOutputLabel.textContent = isEnabled ? 'النص الثاني' : 'النص بعد المعالجة';
+        fmtInput.dataset.placeholder = isEnabled ? 'الصق النص الأول هنا...' : 'الصق النص هنا...';
+        if (isEnabled) {
+            fmtOutput.dataset.placeholder = 'الصق النص الثاني هنا...';
+            fmtDiffBtn.textContent = 'تحديث المقارنة';
+        } else {
+            fmtOutput.removeAttribute('data-placeholder');
+            fmtDiffBtn.textContent = 'معاينة التعديلات';
+        }
+    }
+
+    function fmtExitCompareMode(showMessage = true) {
+        fmtDiffEnabled = false;
+        fmtDiffBtn.classList.remove('fmt-btn-active');
+        fmtClearActiveDiff();
+        fmtHideEditPopover();
+        fmtSetCompareMode(false);
+        fmtRenderHighlights();
+        if (showMessage) showNotify('تم إغلاق وضع المقارنة');
     }
 
     function fmtCountLabel(value) {
@@ -1316,7 +1405,9 @@
         }
         const total = fmtDiffTotal();
         const percent = fmtDiffChangePercent(inputText, outputText).toLocaleString('ar-SA');
-        fmtDiffCount.textContent = `عدد التعديلات: ${total.toLocaleString('ar-SA')} • نسبة التغيير: ${percent}٪`;
+        const totalLabel = fmtCompareModeEnabled ? 'عدد الاختلافات' : 'عدد التعديلات';
+        const percentLabel = fmtCompareModeEnabled ? 'نسبة الاختلافات' : 'نسبة التغيير';
+        fmtDiffCount.textContent = `${totalLabel}: ${total.toLocaleString('ar-SA')} • ${percentLabel}: ${percent}٪`;
         fmtDiffCount.classList.toggle('show', fmtDiffEnabled);
     }
 
@@ -1535,6 +1626,10 @@
     }
 
     function fmtToggleDiff() {
+        if (fmtCompareModeEnabled) {
+            fmtCompareTexts(false);
+            return;
+        }
         if (!fmtDiffEnabled && (!fmtGetText(fmtInput).trim() || !fmtGetText(fmtOutput).trim())) return;
         fmtDiffEnabled = !fmtDiffEnabled;
         fmtDiffBtn.classList.toggle('fmt-btn-active', fmtDiffEnabled);
@@ -1545,6 +1640,33 @@
         fmtRenderHighlights();
     }
 
+    function fmtCompareTexts(allowClose = true) {
+        if (allowClose && fmtCompareModeEnabled) {
+            fmtExitCompareMode();
+            return;
+        }
+        fmtSetCompareMode(true);
+        const inputText = fmtGetText(fmtInput).trim();
+        const outputText = fmtGetText(fmtOutput).trim();
+        if (!inputText || !outputText) {
+            fmtDiffEnabled = false;
+            fmtDiffBtn.classList.remove('fmt-btn-active');
+            fmtClearActiveDiff();
+            fmtHideEditPopover();
+            fmtRenderHighlights();
+            if (!inputText) {
+                fmtInput.focus();
+            } else {
+                fmtOutput.focus();
+            }
+            return showNotify('الصق النصين أولاً ثم اضغط تحديث المقارنة');
+        }
+        fmtDiffEnabled = true;
+        fmtDiffBtn.classList.add('fmt-btn-active');
+        fmtRenderHighlights();
+        showNotify('تمت مقارنة النصين');
+    }
+
     function showNotify(msg) {
         const n = document.getElementById('notify');
         n.textContent = msg;
@@ -1553,6 +1675,7 @@
     }
 
     function fmtProcess() {
+        fmtSetCompareMode(false);
         let t = fmtGetText(fmtInput);
         if (!t) return showNotify('الرجاء لصق النص أولاً');
         t = t.replace(/\n/g, " ");
@@ -1593,10 +1716,12 @@
     }
 
     function fmtRemoveBreaks() {
+        fmtSetCompareMode(false);
         fmtSetOutput(fmtGetText(fmtInput).replace(/\n/g, " ").replace(/\s+/g, " ").trim());
     }
 
     function fmtRemoveSpaces() {
+        fmtSetCompareMode(false);
         fmtSetOutput(fmtGetText(fmtInput).replace(/\s+/g, " ").trim());
     }
 
@@ -1623,6 +1748,9 @@
         fmtHighlightBefore.value = '';
         fmtHighlightAfter.value = '';
         fmtDiffPairs = [];
+        fmtDiffEnabled = false;
+        fmtSetCompareMode(false);
+        fmtDiffBtn.classList.remove('fmt-btn-active');
         fmtClearActiveDiff();
         fmtHideEditPopover();
         fmtRecordHistory(fmtInput);
