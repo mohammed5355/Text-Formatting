@@ -233,6 +233,28 @@
             color: #ffffff;
         }
 
+        .fmt-header-left #fmt-mini-mode {
+            border-color: rgba(31, 111, 235, 0.26);
+            background: var(--primary-soft);
+            color: var(--primary-dark);
+        }
+
+        .fmt-header-left #fmt-mini-mode:hover {
+            border-color: var(--primary);
+            color: var(--primary-dark);
+            box-shadow: 0 10px 22px rgba(31, 111, 235, 0.16);
+        }
+
+        .fmt-header-left #fmt-mini-mode.fmt-btn-active {
+            border-color: var(--primary);
+            background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: #ffffff;
+        }
+
+        .fmt-header-left #fmt-mini-mode.fmt-btn-active:hover {
+            color: #ffffff;
+        }
+
         .theme-toggle {
             width: 34px;
             height: 34px;
@@ -843,6 +865,79 @@
             display: block;
         }
 
+        .fmt-mini-panel {
+            position: fixed;
+            left: 22px;
+            bottom: 22px;
+            z-index: 6000;
+            width: 360px;
+            height: 420px;
+            display: none;
+            grid-template-rows: 1fr 1fr auto;
+            gap: 10px;
+            padding: 12px;
+            border: 1px solid var(--workspace-border);
+            border-radius: 8px;
+            background: var(--popover-bg);
+            box-shadow: 0 24px 60px rgba(20, 30, 45, 0.24);
+            -webkit-backdrop-filter: blur(18px);
+            backdrop-filter: blur(18px);
+        }
+
+        .fmt-mini-panel.show {
+            display: grid;
+        }
+
+        .fmt-mini-textarea {
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            resize: none;
+            overflow: auto;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--input-bg);
+            color: var(--text);
+            font: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            line-height: 1.75;
+            direction: rtl;
+            text-align: right;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+        }
+
+        .fmt-mini-textarea:focus {
+            outline: none;
+            border-color: rgba(31, 111, 235, 0.65);
+            background: var(--input-focus-bg);
+            box-shadow: 0 0 0 3px var(--focus-ring);
+        }
+
+        .fmt-mini-textarea::placeholder {
+            color: var(--placeholder);
+        }
+
+        .fmt-mini-actions {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .fmt-mini-process,
+        .fmt-mini-copy,
+        .fmt-mini-clear {
+            width: 100%;
+            min-height: 38px;
+        }
+
+        .fmt-mini-clear {
+            color: var(--danger);
+            border-color: rgba(220, 38, 38, 0.28);
+            background: var(--danger-soft);
+        }
+
         @keyframes slideIn {
             from {
                 opacity: 0;
@@ -889,6 +984,7 @@
                         <button onclick="fmtClear()" class="fmt-btn fmt-btn-danger">مسح الكل</button>
                     </div>
                     <div class="fmt-header-left">
+                        <button id="fmt-mini-mode" onclick="fmtToggleMiniMode()" class="fmt-btn" type="button" aria-pressed="false">وضع مدمج</button>
                         <button id="fmt-compare-mode" onclick="fmtCompareTexts()" class="fmt-btn" type="button" aria-pressed="false">مقارنة بين نصين</button>
                         <div class="app-copyright">محمد المحيميد 2026</div>
                     </div>
@@ -965,6 +1061,15 @@
 </div>
 
 <div id="notify" class="notification">تم النسخ</div>
+<div id="fmt-mini-panel" class="fmt-mini-panel" aria-hidden="true">
+    <textarea id="fmt-mini-input" class="fmt-mini-textarea" placeholder="الصق السطر هنا..."></textarea>
+    <textarea id="fmt-mini-output" class="fmt-mini-textarea" placeholder="النتيجة..." readonly></textarea>
+    <div class="fmt-mini-actions">
+        <button id="fmt-mini-process" onclick="fmtProcessMini()" class="fmt-btn fmt-btn-primary fmt-mini-process" type="button">معالجة</button>
+        <button id="fmt-mini-copy" onclick="fmtCopyMini()" class="fmt-btn fmt-mini-copy" type="button">نسخ النتيجة</button>
+        <button id="fmt-mini-clear" onclick="fmtClearMini()" class="fmt-btn fmt-mini-clear" type="button">مسح الكل</button>
+    </div>
+</div>
 <form id="fmt-edit-popover" class="fmt-edit-popover">
     <input id="fmt-edit-input" class="fmt-edit-input" type="text" aria-label="النص البديل" placeholder="اكتب النص البديل">
     <div class="fmt-edit-actions">
@@ -985,6 +1090,10 @@
     const fmtCompareModeBtn = document.getElementById('fmt-compare-mode');
     const fmtInputLabel = document.getElementById('fmt-input-label');
     const fmtOutputLabel = document.getElementById('fmt-output-label');
+    const fmtMiniModeBtn = document.getElementById('fmt-mini-mode');
+    const fmtMiniPanel = document.getElementById('fmt-mini-panel');
+    const fmtMiniInput = document.getElementById('fmt-mini-input');
+    const fmtMiniOutput = document.getElementById('fmt-mini-output');
     const fmtEditPopover = document.getElementById('fmt-edit-popover');
     const fmtEditInput = document.getElementById('fmt-edit-input');
     const fmtEditCancel = document.getElementById('fmt-edit-cancel');
@@ -1003,6 +1112,7 @@
     let fmtEditTarget = null;
     let fmtEditObserver = null;
     let fmtSyncingScroll = false;
+    let fmtMiniPipWindow = null;
     const fmtHistory = new Map();
     const fmtFontSize = new Map();
     const fmtMinFontSize = 12;
@@ -1069,6 +1179,183 @@
         fmtSetCompareMode(false);
         fmtRenderHighlights();
         if (showMessage) showNotify('تم إغلاق وضع المقارنة');
+    }
+
+    function fmtSetMiniButtonActive(isActive) {
+        fmtMiniModeBtn.classList.toggle('fmt-btn-active', isActive);
+        fmtMiniModeBtn.setAttribute('aria-pressed', String(isActive));
+    }
+
+    function fmtSetMiniMode(isEnabled) {
+        fmtMiniPanel.classList.toggle('show', isEnabled);
+        fmtMiniPanel.setAttribute('aria-hidden', String(!isEnabled));
+        fmtSetMiniButtonActive(isEnabled);
+        if (isEnabled) {
+            setTimeout(() => fmtMiniInput.focus(), 0);
+        }
+    }
+
+    function fmtMiniDocumentHtml() {
+        return `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>وضع مدمج</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap');
+        * { box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+        body {
+            padding: 12px;
+            direction: rtl;
+            font-family: 'Cairo', 'Tajawal', 'Segoe UI', Tahoma, Arial, sans-serif;
+            background: #f5f8fc;
+            color: #162033;
+        }
+        .mini-shell {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-rows: 1fr 1fr auto;
+            gap: 10px;
+        }
+        textarea {
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            resize: none;
+            overflow: auto;
+            padding: 10px 12px;
+            border: 1px solid #d8e1ec;
+            border-radius: 8px;
+            background: #ffffff;
+            color: #162033;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            line-height: 1.75;
+            direction: rtl;
+            text-align: right;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: rgba(31, 111, 235, 0.65);
+            box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.18);
+        }
+        .mini-actions {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+        }
+        button {
+            min-height: 38px;
+            border: 1px solid #1f6feb;
+            border-radius: 7px;
+            background: linear-gradient(180deg, #1f6feb 0%, #1959c6 100%);
+            color: #ffffff;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .secondary {
+            background: #ffffff;
+            color: #162033;
+            border-color: #d8e1ec;
+        }
+        .danger {
+            background: #fff1f2;
+            color: #dc2626;
+            border-color: rgba(220, 38, 38, 0.28);
+        }
+    </style>
+</head>
+<body>
+    <div class="mini-shell">
+        <textarea id="pip-input" placeholder="الصق السطر هنا..."></textarea>
+        <textarea id="pip-output" placeholder="النتيجة..." readonly></textarea>
+        <div class="mini-actions">
+            <button id="pip-process" type="button">معالجة</button>
+            <button id="pip-copy" class="secondary" type="button">نسخ النتيجة</button>
+            <button id="pip-clear" class="danger" type="button">مسح الكل</button>
+        </div>
+    </div>
+</body>
+</html>`;
+    }
+
+    async function fmtOpenMiniPip() {
+        if (!('documentPictureInPicture' in window)) return false;
+        try {
+            fmtSetMiniMode(false);
+            fmtMiniPipWindow = await window.documentPictureInPicture.requestWindow({
+                width: 360,
+                height: 420
+            });
+            fmtMiniPipWindow.document.open();
+            fmtMiniPipWindow.document.write(fmtMiniDocumentHtml());
+            fmtMiniPipWindow.document.close();
+            fmtSetMiniButtonActive(true);
+
+            const pipInput = fmtMiniPipWindow.document.getElementById('pip-input');
+            const pipOutput = fmtMiniPipWindow.document.getElementById('pip-output');
+            const pipProcess = fmtMiniPipWindow.document.getElementById('pip-process');
+            const pipCopy = fmtMiniPipWindow.document.getElementById('pip-copy');
+            const pipClear = fmtMiniPipWindow.document.getElementById('pip-clear');
+
+            const processPipText = () => {
+                const text = pipInput.value;
+                if (!text.trim()) {
+                    pipInput.focus();
+                    showNotify('الرجاء لصق النص أولاً');
+                    return;
+                }
+                pipOutput.value = fmtFormatText(text);
+                showNotify('تمت المعالجة في النافذة العائمة');
+            };
+            const clearPipText = () => {
+                pipInput.value = '';
+                pipOutput.value = '';
+                pipInput.focus();
+                showNotify('تم مسح النافذة العائمة');
+            };
+
+            pipProcess.addEventListener('click', processPipText);
+            pipCopy.addEventListener('click', () => fmtCopyMiniResult(pipOutput.value));
+            pipClear.addEventListener('click', clearPipText);
+            pipInput.addEventListener('keydown', event => {
+                if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+                    event.preventDefault();
+                    processPipText();
+                }
+            });
+            fmtMiniPipWindow.addEventListener('pagehide', () => {
+                fmtMiniPipWindow = null;
+                fmtSetMiniButtonActive(false);
+            }, { once: true });
+            pipInput.focus();
+            return true;
+        } catch (err) {
+            fmtMiniPipWindow = null;
+            fmtSetMiniButtonActive(false);
+            return false;
+        }
+    }
+
+    async function fmtToggleMiniMode() {
+        if (fmtMiniPipWindow && !fmtMiniPipWindow.closed) {
+            fmtMiniPipWindow.close();
+            return;
+        }
+        if (fmtMiniPanel.classList.contains('show')) {
+            fmtSetMiniMode(false);
+            return;
+        }
+        const openedPip = await fmtOpenMiniPip();
+        if (!openedPip) {
+            fmtSetMiniMode(true);
+            showNotify('المتصفح لا يدعم النافذة العائمة، تم فتح الوضع داخل الصفحة');
+        }
     }
 
     function fmtCountLabel(value) {
@@ -1674,10 +1961,8 @@
         setTimeout(() => n.classList.remove('show'), 2000);
     }
 
-    function fmtProcess() {
-        fmtSetCompareMode(false);
-        let t = fmtGetText(fmtInput);
-        if (!t) return showNotify('الرجاء لصق النص أولاً');
+    function fmtFormatText(text) {
+        let t = text;
         t = t.replace(/\n/g, " ");
         t = t.replace(/\s+([.,:;؟!])/g, '$1').replace(/(\(|\[|\{)\s+/g, '$1').replace(/\s+(\)|\]|\})/g, '$1').replace(/([\u0621-\u064A\u0671-\u06D3])\s*,\s*([\u0621-\u064A\u0671-\u06D3])/g, '$1، $2');
         t = t.replace(/[0-9۰-۹]/g, d => ({'0':'٠','1':'١','2':'٢','3':'٣','4':'٤','5':'٥','6':'٦','7':'٧','8':'٨','9':'٩','۰':'٠','۱':'١','۲':'٢','۳':'٣','۴':'٤','۵':'٥','۶':'٦','۷':'٧','۸':'٨','۹':'٩'})[d] || d);
@@ -1712,7 +1997,52 @@
         });
         t = t.replace(new RegExp(`(${digit}+)([-/\\\\])(${digit}+)`, 'g'), (m,n1,s,n2) => n2+s+n1);
         placeholders.forEach((p,i) => t = t.replace(p, dates[i]));
-        fmtSetOutput(t.replace(/\s+/g, " ").trim());
+        return t.replace(/\s+/g, " ").trim();
+    }
+
+    function fmtProcess() {
+        fmtSetCompareMode(false);
+        const text = fmtGetText(fmtInput);
+        if (!text) return showNotify('الرجاء لصق النص أولاً');
+        fmtSetOutput(fmtFormatText(text));
+    }
+
+    function fmtProcessMini() {
+        const text = fmtMiniInput.value;
+        if (!text.trim()) {
+            fmtMiniInput.focus();
+            return showNotify('الرجاء لصق النص أولاً');
+        }
+        fmtMiniOutput.value = fmtFormatText(text);
+        showNotify('تمت المعالجة في الوضع المدمج');
+    }
+
+    async function fmtCopyMiniResult(text) {
+        if (!text) return showNotify('لا توجد نتيجة لنسخها');
+        try {
+            await navigator.clipboard.writeText(text);
+        } catch (err) {
+            const helper = document.createElement('textarea');
+            helper.value = text;
+            helper.style.position = 'fixed';
+            helper.style.opacity = '0';
+            document.body.appendChild(helper);
+            helper.select();
+            document.execCommand('copy');
+            helper.remove();
+        }
+        showNotify('تم نسخ النتيجة');
+    }
+
+    function fmtCopyMini() {
+        fmtCopyMiniResult(fmtMiniOutput.value);
+    }
+
+    function fmtClearMini() {
+        fmtMiniInput.value = '';
+        fmtMiniOutput.value = '';
+        fmtMiniInput.focus();
+        showNotify('تم مسح الوضع المدمج');
     }
 
     function fmtRemoveBreaks() {
@@ -1774,7 +2104,10 @@
         fmtHideEditPopover();
     });
     document.addEventListener('keydown', event => {
-        if (event.key === 'Escape') fmtHideEditPopover();
+        if (event.key === 'Escape') {
+            fmtHideEditPopover();
+            if (fmtMiniPanel.classList.contains('show')) fmtSetMiniMode(false);
+        }
     });
     window.addEventListener('resize', fmtHideEditPopover);
     fmtInitHistory(fmtInput, fmtInputUndo, fmtInputRedo);
@@ -1807,6 +2140,12 @@
     });
     fmtOutput.addEventListener('paste', fmtPastePlainText);
     fmtOutput.addEventListener('scroll', () => fmtSyncScroll(fmtOutput, fmtInput));
+    fmtMiniInput.addEventListener('keydown', event => {
+        if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+            event.preventDefault();
+            fmtProcessMini();
+        }
+    });
     fmtHighlightBefore.addEventListener('input', fmtRenderHighlights);
     fmtHighlightAfter.addEventListener('input', fmtRenderHighlights);
     themeToggle.addEventListener('click', fmtToggleTheme);
