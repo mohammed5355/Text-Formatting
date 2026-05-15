@@ -867,128 +867,6 @@
             display: flex;
         }
 
-        .fmt-unified-diff {
-            position: fixed;
-            inset: 48px;
-            z-index: 6200;
-            display: none;
-            grid-template-rows: auto 1fr;
-            border: 1px solid var(--border-strong);
-            border-radius: 8px;
-            background: var(--popover-bg);
-            box-shadow: 0 28px 70px rgba(20, 30, 45, 0.26);
-            -webkit-backdrop-filter: blur(18px);
-            backdrop-filter: blur(18px);
-            overflow: hidden;
-        }
-
-        .fmt-unified-diff.show {
-            display: grid;
-        }
-
-        .fmt-unified-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 14px;
-            min-height: 48px;
-            padding: 8px 14px;
-            border-bottom: 1px solid var(--border);
-            background:
-                linear-gradient(180deg, var(--surface-muted) 0%, var(--surface) 100%);
-        }
-
-        .fmt-unified-title {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            min-width: 0;
-            color: var(--text);
-            font-size: 15px;
-            font-weight: 900;
-        }
-
-        .fmt-unified-legend {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--muted);
-            font-size: 12px;
-            font-weight: 800;
-            white-space: nowrap;
-        }
-
-        .fmt-unified-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .fmt-unified-chip::before {
-            content: "";
-            width: 10px;
-            height: 10px;
-            border-radius: 3px;
-            background: var(--accent);
-        }
-
-        .fmt-unified-chip-delete::before {
-            background: var(--danger);
-        }
-
-        .fmt-unified-close {
-            flex: 0 0 auto;
-        }
-
-        .fmt-unified-body {
-            overflow: auto;
-            padding: 28px clamp(24px, 4vw, 56px) 48px;
-            background: var(--surface);
-            color: var(--text);
-            font-size: 18px;
-            font-weight: 600;
-            line-height: 2.15;
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
-
-        .fmt-unified-added,
-        .fmt-unified-deleted {
-            display: inline;
-            padding: 1px 5px;
-            border-radius: 5px;
-            font-weight: 800;
-        }
-
-        .fmt-unified-added {
-            background: var(--accent-soft);
-            color: #065f56;
-            text-decoration: none;
-            box-shadow: inset 0 -1px 0 rgba(13, 148, 136, 0.22);
-        }
-
-        .fmt-unified-deleted {
-            background: var(--danger-soft);
-            color: #991b1b;
-            text-decoration: line-through;
-            text-decoration-thickness: 2px;
-            text-decoration-color: currentColor;
-            box-shadow: inset 0 -1px 0 rgba(220, 38, 38, 0.2);
-        }
-
-        body.dark-theme .fmt-unified-added {
-            color: #b8fff4;
-        }
-
-        body.dark-theme .fmt-unified-deleted {
-            color: #fecdd3;
-        }
-
-        .fmt-unified-empty {
-            color: var(--muted);
-            font-weight: 800;
-        }
-
         .notification {
             position: fixed;
             top: 22px;
@@ -1229,7 +1107,6 @@
                     <div class="fmt-grid">
                         <div class="fmt-diff-center">
                             <button id="fmt-diff-btn" onclick="fmtToggleDiff()" class="fmt-btn">معاينة التعديلات</button>
-                            <button id="fmt-unified-diff-btn" onclick="fmtToggleUnifiedDiff()" class="fmt-btn">رؤية التغييرات</button>
                             <span id="fmt-diff-count" class="fmt-diff-count">عدد التعديلات: 0</span>
                         </div>
                         <div class="fmt-box-group fmt-box-input">
@@ -1299,20 +1176,6 @@
 
 <div id="notify" class="notification">تم النسخ</div>
 <button id="fmt-focus-exit" class="fmt-focus-exit" type="button" aria-hidden="true" aria-label="الخروج من وضع التركيز">الخروج من التركيز</button>
-<section id="fmt-unified-diff" class="fmt-unified-diff" aria-hidden="true" aria-labelledby="fmt-unified-title">
-    <div class="fmt-unified-head">
-        <div class="fmt-unified-title">
-            <span id="fmt-unified-title">رؤية التغييرات</span>
-            <span id="fmt-unified-summary" class="fmt-meta">0 تغيير</span>
-        </div>
-        <div class="fmt-unified-legend">
-            <span class="fmt-unified-chip fmt-unified-chip-delete">محذوف</span>
-            <span class="fmt-unified-chip">مضاف</span>
-        </div>
-        <button id="fmt-unified-close" class="fmt-btn fmt-unified-close" type="button">إغلاق</button>
-    </div>
-    <div id="fmt-unified-body" class="fmt-unified-body"></div>
-</section>
 <div id="fmt-mini-panel" class="fmt-mini-panel" aria-hidden="true">
     <textarea id="fmt-mini-input" class="fmt-mini-textarea" placeholder="الصق السطر هنا..."></textarea>
     <textarea id="fmt-mini-output" class="fmt-mini-textarea" placeholder="النتيجة..."></textarea>
@@ -1338,12 +1201,7 @@
     const fmtHighlightBefore = document.getElementById('fmt-highlight-before');
     const fmtHighlightAfter = document.getElementById('fmt-highlight-after');
     const fmtDiffBtn = document.getElementById('fmt-diff-btn');
-    const fmtUnifiedDiffBtn = document.getElementById('fmt-unified-diff-btn');
     const fmtDiffCount = document.getElementById('fmt-diff-count');
-    const fmtUnifiedDiff = document.getElementById('fmt-unified-diff');
-    const fmtUnifiedBody = document.getElementById('fmt-unified-body');
-    const fmtUnifiedSummary = document.getElementById('fmt-unified-summary');
-    const fmtUnifiedClose = document.getElementById('fmt-unified-close');
     const fmtCompareModeBtn = document.getElementById('fmt-compare-mode');
     const fmtInputLabel = document.getElementById('fmt-input-label');
     const fmtOutputLabel = document.getElementById('fmt-output-label');
@@ -1433,7 +1291,6 @@
     function fmtExitCompareMode(showMessage = true) {
         fmtDiffEnabled = false;
         fmtDiffBtn.classList.remove('fmt-btn-active');
-        fmtHideUnifiedDiff(false);
         fmtClearActiveDiff();
         fmtHideEditPopover();
         fmtSetCompareMode(false);
@@ -1947,111 +1804,6 @@
         return pairs;
     }
 
-    function fmtBuildDiffOperations(inputText, outputText) {
-        const before = fmtTokenize(inputText);
-        const after = fmtTokenize(outputText);
-        if (!before.length && !after.length) return [];
-
-        const rows = before.length + 1;
-        const cols = after.length + 1;
-        const table = Array.from({ length: rows }, () => Array(cols).fill(0));
-
-        for (let i = before.length - 1; i >= 0; i--) {
-            for (let j = after.length - 1; j >= 0; j--) {
-                table[i][j] = before[i].key === after[j].key
-                    ? table[i + 1][j + 1] + 1
-                    : Math.max(table[i + 1][j], table[i][j + 1]);
-            }
-        }
-
-        const operations = [];
-        const pushWord = (type, word) => {
-            const last = operations[operations.length - 1];
-            if (last && last.type === type) {
-                last.words.push(word);
-            } else {
-                operations.push({ type, words: [word] });
-            }
-        };
-
-        let i = 0;
-        let j = 0;
-        while (i < before.length && j < after.length) {
-            if (before[i].key === after[j].key) {
-                pushWord('equal', after[j].word);
-                i++;
-                j++;
-            } else if (table[i + 1][j] >= table[i][j + 1]) {
-                pushWord('delete', before[i].word);
-                i++;
-            } else {
-                pushWord('insert', after[j].word);
-                j++;
-            }
-        }
-        while (i < before.length) pushWord('delete', before[i++].word);
-        while (j < after.length) pushWord('insert', after[j++].word);
-
-        return operations;
-    }
-
-    function fmtRenderUnifiedDiff() {
-        const inputText = fmtGetText(fmtInput);
-        const outputText = fmtGetText(fmtOutput);
-        const operations = fmtBuildDiffOperations(inputText, outputText);
-        const changedWords = operations.reduce((sum, op) => op.type === 'equal' ? sum : sum + op.words.length, 0);
-        const changeLabel = changedWords.toLocaleString('ar-SA');
-
-        fmtUnifiedSummary.textContent = `${changeLabel} كلمة متغيرة`;
-        if (!operations.length) {
-            fmtUnifiedBody.innerHTML = '<span class="fmt-unified-empty">لا يوجد نص لعرض التغييرات.</span>';
-            return;
-        }
-        if (!changedWords) {
-            fmtUnifiedBody.innerHTML = '<span class="fmt-unified-empty">لا توجد تغييرات بين النصين.</span>';
-            return;
-        }
-
-        fmtUnifiedBody.innerHTML = operations.map((op, index) => {
-            const text = fmtEscapeHtml(op.words.join(' '));
-            const spacer = index === 0 ? '' : ' ';
-            if (op.type === 'delete') return `${spacer}<del class="fmt-unified-deleted">${text}</del>`;
-            if (op.type === 'insert') return `${spacer}<ins class="fmt-unified-added">${text}</ins>`;
-            return `${spacer}${text}`;
-        }).join('');
-    }
-
-    function fmtShowUnifiedDiff() {
-        const inputText = fmtGetText(fmtInput).trim();
-        const outputText = fmtGetText(fmtOutput).trim();
-        if (!inputText || !outputText) {
-            if (!inputText) {
-                fmtInput.focus();
-            } else {
-                fmtOutput.focus();
-            }
-            return showNotify('الصق النصين أولاً ثم اضغط رؤية التغييرات');
-        }
-        fmtUnifiedDiffBtn.classList.add('fmt-btn-active');
-        fmtRenderUnifiedDiff();
-        fmtUnifiedDiff.classList.add('show');
-        fmtUnifiedDiff.setAttribute('aria-hidden', 'false');
-    }
-
-    function fmtHideUnifiedDiff() {
-        fmtUnifiedDiff.classList.remove('show');
-        fmtUnifiedDiff.setAttribute('aria-hidden', 'true');
-        fmtUnifiedDiffBtn.classList.remove('fmt-btn-active');
-    }
-
-    function fmtToggleUnifiedDiff() {
-        if (fmtUnifiedDiff.classList.contains('show')) {
-            fmtHideUnifiedDiff();
-            return;
-        }
-        fmtShowUnifiedDiff();
-    }
-
     function fmtDiffTotal() {
         if (!fmtDiffEnabled) return 0;
         return fmtDiffPairs.length;
@@ -2291,7 +2043,6 @@
         fmtBindDiffMarks();
         fmtUpdateCounts();
         fmtUpdateDiffCount();
-        if (fmtUnifiedDiff.classList.contains('show')) fmtRenderUnifiedDiff();
     }
 
     function fmtSetOutput(text) {
@@ -2326,7 +2077,6 @@
         if (!inputText || !outputText) {
             fmtDiffEnabled = false;
             fmtDiffBtn.classList.remove('fmt-btn-active');
-            fmtHideUnifiedDiff(false);
             fmtClearActiveDiff();
             fmtHideEditPopover();
             fmtRenderHighlights();
@@ -2335,7 +2085,7 @@
             } else {
                 fmtOutput.focus();
             }
-            return showNotify('الصق النصين أولاً ثم اضغط تحديث المقارنة أو رؤية التغييرات');
+            return showNotify('الصق النصين أولاً ثم اضغط تحديث المقارنة');
         }
         fmtDiffEnabled = true;
         fmtDiffBtn.classList.add('fmt-btn-active');
@@ -2468,7 +2218,6 @@
         fmtDiffEnabled = false;
         fmtSetCompareMode(false);
         fmtDiffBtn.classList.remove('fmt-btn-active');
-        fmtHideUnifiedDiff(false);
         fmtClearActiveDiff();
         fmtHideEditPopover();
         fmtRecordHistory(fmtInput);
@@ -2496,7 +2245,6 @@
             fmtHideEditPopover();
             if (fmtMiniPanel.classList.contains('show')) fmtSetMiniMode(false);
             if (document.body.classList.contains('fmt-focus-mode')) fmtSetFocusMode(false);
-            if (fmtUnifiedDiff.classList.contains('show')) fmtHideUnifiedDiff();
         }
     });
     window.addEventListener('resize', fmtHideEditPopover);
@@ -2538,7 +2286,6 @@
     });
     fmtHighlightBefore.addEventListener('input', fmtRenderHighlights);
     fmtHighlightAfter.addEventListener('input', fmtRenderHighlights);
-    fmtUnifiedClose.addEventListener('click', () => fmtHideUnifiedDiff());
     fmtFocusExitBtn.addEventListener('click', () => fmtSetFocusMode(false));
     themeToggle.addEventListener('click', fmtToggleTheme);
     fmtSetTheme(fmtLoadTheme());
