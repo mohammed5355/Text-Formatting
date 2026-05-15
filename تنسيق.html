@@ -350,6 +350,41 @@
             display: block;
         }
 
+        .fmt-help-toggle {
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(13, 148, 136, 0.28);
+            border-radius: 7px;
+            background: var(--accent-soft);
+            color: var(--accent-dark);
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 900;
+            line-height: 1;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.48);
+            transition:
+                transform 0.18s ease,
+                box-shadow 0.18s ease,
+                background-color 0.18s ease,
+                border-color 0.18s ease,
+                color 0.18s ease;
+        }
+
+        .fmt-help-toggle:hover {
+            transform: translateY(-1px);
+            border-color: var(--accent);
+            color: var(--accent-dark);
+            box-shadow: 0 10px 22px rgba(13, 148, 136, 0.16);
+        }
+
+        .fmt-help-toggle:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 3px var(--focus-ring);
+        }
+
         .fmt-workspace {
             flex: 1;
             display: flex;
@@ -1107,6 +1142,148 @@
             box-shadow: 0 10px 22px rgba(220, 38, 38, 0.18);
         }
 
+        .fmt-help-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 7000;
+            display: none;
+            place-items: center;
+            padding: 24px;
+            background: rgba(15, 23, 42, 0.34);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+        }
+
+        .fmt-help-overlay.show {
+            display: grid;
+        }
+
+        .fmt-help-dialog {
+            width: min(820px, calc(100vw - 48px));
+            max-height: min(720px, calc(100vh - 48px));
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border-strong);
+            border-radius: 8px;
+            background: var(--popover-bg);
+            color: var(--text);
+            box-shadow: 0 28px 70px rgba(20, 30, 45, 0.28);
+            overflow: hidden;
+        }
+
+        .fmt-help-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            background:
+                linear-gradient(180deg, var(--surface-muted) 0%, var(--surface) 100%);
+        }
+
+        .fmt-help-title {
+            display: grid;
+            gap: 3px;
+            min-width: 0;
+        }
+
+        .fmt-help-title strong {
+            color: var(--text);
+            font-size: 16px;
+            font-weight: 900;
+        }
+
+        .fmt-help-title span {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 800;
+            line-height: 1.6;
+        }
+
+        .fmt-help-body {
+            overflow: auto;
+            padding: 14px 16px 16px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .fmt-help-case {
+            display: grid;
+            grid-template-columns: 190px minmax(0, 1fr);
+            gap: 12px;
+            align-items: start;
+            padding: 10px 12px;
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            background: var(--surface);
+        }
+
+        .fmt-help-case h3 {
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 900;
+            line-height: 1.7;
+        }
+
+        .fmt-help-case p {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 800;
+            line-height: 1.75;
+        }
+
+        .fmt-help-example {
+            display: grid;
+            gap: 6px;
+            min-width: 0;
+        }
+
+        .fmt-help-example-row {
+            display: grid;
+            grid-template-columns: 42px minmax(0, 1fr);
+            gap: 8px;
+            align-items: start;
+        }
+
+        .fmt-help-example-row span {
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 900;
+            line-height: 1.8;
+        }
+
+        .fmt-help-example-row code {
+            display: block;
+            min-width: 0;
+            padding: 6px 8px;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            background: var(--surface-muted);
+            color: var(--text);
+            font-family: 'Cairo', 'Tajawal', 'Segoe UI', Tahoma, Arial, sans-serif;
+            font-size: 12px;
+            font-weight: 800;
+            line-height: 1.75;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        @media (max-width: 760px) {
+            .fmt-help-dialog {
+                width: calc(100vw - 24px);
+                max-height: calc(100vh - 24px);
+            }
+
+            .fmt-help-overlay {
+                padding: 12px;
+            }
+
+            .fmt-help-case {
+                grid-template-columns: 1fr;
+            }
+        }
+
         body.fmt-compare-active .fmt-box-input .fmt-panel-head,
         body.fmt-compare-active .fmt-box-output .fmt-panel-head {
             background:
@@ -1357,6 +1534,7 @@
                                 <path d="m19.1 4.9-1.4 1.4"></path>
                             </svg>
                         </button>
+                        <button id="fmt-process-help" class="fmt-help-toggle" type="button" aria-label="شرح معالجة شاملة" aria-expanded="false" aria-controls="fmt-help-overlay" title="شرح معالجة شاملة">؟</button>
                     </div>
                     <div class="fmt-controls">
                         <button onclick="fmtProcess()" class="fmt-btn fmt-btn-primary">معالجة شاملة</button>
@@ -1476,6 +1654,100 @@
         <button type="button" id="fmt-edit-cancel" class="fmt-edit-btn fmt-edit-btn-secondary">إلغاء</button>
     </div>
 </form>
+<div id="fmt-help-overlay" class="fmt-help-overlay" aria-hidden="true">
+    <section class="fmt-help-dialog" role="dialog" aria-modal="true" aria-labelledby="fmt-help-title">
+        <div class="fmt-help-head">
+            <div class="fmt-help-title">
+                <strong id="fmt-help-title">ماذا تفعل معالجة شاملة؟</strong>
+                <span>تطبّق الأداة هذه التنسيقات على النص الأصلي وتضع النتيجة في خانة النص بعد المعالجة.</span>
+            </div>
+            <button id="fmt-help-close" class="fmt-icon-btn" type="button" aria-label="إغلاق الشرح" title="إغلاق الشرح">×</button>
+        </div>
+        <div class="fmt-help-body">
+            <article class="fmt-help-case">
+                <div>
+                    <h3>إزالة فواصل الأسطر داخل النص</h3>
+                    <p>تحوّل الانتقالات بين الأسطر إلى مسافة واحدة حتى يصبح النص متصلًا.</p>
+                </div>
+                <div class="fmt-help-example">
+                    <div class="fmt-help-example-row"><span>قبل</span><code>صدر القرار
+اليوم</code></div>
+                    <div class="fmt-help-example-row"><span>بعد</span><code>صدر القرار اليوم</code></div>
+                </div>
+            </article>
+            <article class="fmt-help-case">
+                <div>
+                    <h3>ضبط علامات الترقيم</h3>
+                    <p>تحذف المسافة قبل علامات الترقيم وتحول الفاصلة الإنجليزية بين الكلمات العربية إلى فاصلة عربية.</p>
+                </div>
+                <div class="fmt-help-example">
+                    <div class="fmt-help-example-row"><span>قبل</span><code>مرحباً , كيف الحال ؟</code></div>
+                    <div class="fmt-help-example-row"><span>بعد</span><code>مرحباً، كيف الحال؟</code></div>
+                </div>
+            </article>
+            <article class="fmt-help-case">
+                <div>
+                    <h3>تنظيف الأقواس</h3>
+                    <p>تزيل المسافات الزائدة بعد القوس الافتتاحي وقبل القوس الختامي.</p>
+                </div>
+                <div class="fmt-help-example">
+                    <div class="fmt-help-example-row"><span>قبل</span><code>راجع ( التقرير )</code></div>
+                    <div class="fmt-help-example-row"><span>بعد</span><code>راجع (التقرير)</code></div>
+                </div>
+            </article>
+            <article class="fmt-help-case">
+                <div>
+                    <h3>توحيد شكل الأرقام</h3>
+                    <p>تحول الأرقام الإنجليزية والفارسية إلى الأرقام العربية المستخدمة في الصفحة.</p>
+                </div>
+                <div class="fmt-help-example">
+                    <div class="fmt-help-example-row"><span>قبل</span><code>عام 2026 ورقم ۱۲</code></div>
+                    <div class="fmt-help-example-row"><span>بعد</span><code>عام ٢٠٢٦ ورقم ١٢</code></div>
+                </div>
+            </article>
+            <article class="fmt-help-case">
+                <div>
+                    <h3>تصحيح الأرقام ذات الفواصل</h3>
+                    <p>إذا وصل الرقم الكبير معكوسًا عند النسخ، تعيد الأداة ترتيب مجموعاته.</p>
+                </div>
+                <div class="fmt-help-example">
+                    <div class="fmt-help-example-row"><span>قبل</span><code>000,250,1</code></div>
+                    <div class="fmt-help-example-row"><span>بعد</span><code>١,٢٥٠,٠٠٠</code></div>
+                </div>
+            </article>
+            <article class="fmt-help-case">
+                <div>
+                    <h3>تصحيح صيغة التاريخ</h3>
+                    <p>تحول التاريخ المكتوب بصيغة سنة-شهر-يوم إلى يوم-شهر-سنة عندما يكون ذلك واضحًا.</p>
+                </div>
+                <div class="fmt-help-example">
+                    <div class="fmt-help-example-row"><span>قبل</span><code>2026-05-15</code></div>
+                    <div class="fmt-help-example-row"><span>بعد</span><code>١٥-٠٥-٢٠٢٦</code></div>
+                </div>
+            </article>
+            <article class="fmt-help-case">
+                <div>
+                    <h3>تصحيح القيم الرقمية الثنائية</h3>
+                    <p>تعكس ترتيب رقمين مفصولين بشرطة أو شرطة مائلة عندما يظهران بالاتجاه غير المطلوب.</p>
+                </div>
+                <div class="fmt-help-example">
+                    <div class="fmt-help-example-row"><span>قبل</span><code>5/10</code></div>
+                    <div class="fmt-help-example-row"><span>بعد</span><code>١٠/٥</code></div>
+                </div>
+            </article>
+            <article class="fmt-help-case">
+                <div>
+                    <h3>إزالة المسافات الزائدة نهائيًا</h3>
+                    <p>تضغط المسافات المتكررة في كامل النص إلى مسافة واحدة وتحذف الفراغات من البداية والنهاية.</p>
+                </div>
+                <div class="fmt-help-example">
+                    <div class="fmt-help-example-row"><span>قبل</span><code>  هذا   نص   منسق  </code></div>
+                    <div class="fmt-help-example-row"><span>بعد</span><code>هذا نص منسق</code></div>
+                </div>
+            </article>
+        </div>
+    </section>
+</div>
 
 <script>
     const fmtInput = document.getElementById('fmt-input');
@@ -1514,6 +1786,9 @@
     const fmtInputFontIncrease = document.getElementById('fmt-input-font-increase');
     const fmtOutputFontDecrease = document.getElementById('fmt-output-font-decrease');
     const fmtOutputFontIncrease = document.getElementById('fmt-output-font-increase');
+    const fmtProcessHelpBtn = document.getElementById('fmt-process-help');
+    const fmtHelpOverlay = document.getElementById('fmt-help-overlay');
+    const fmtHelpClose = document.getElementById('fmt-help-close');
     let fmtDiffEnabled = false;
     let fmtCompareModeEnabled = false;
     let fmtReviewEnabled = false;
@@ -1563,6 +1838,20 @@
         const isDark = !document.body.classList.contains('dark-theme');
         fmtSetTheme(isDark);
         fmtSaveTheme(isDark);
+    }
+
+    function fmtOpenProcessHelp() {
+        fmtHelpOverlay.classList.add('show');
+        fmtHelpOverlay.setAttribute('aria-hidden', 'false');
+        fmtProcessHelpBtn.setAttribute('aria-expanded', 'true');
+        setTimeout(() => fmtHelpClose.focus(), 0);
+    }
+
+    function fmtCloseProcessHelp(restoreFocus = true) {
+        fmtHelpOverlay.classList.remove('show');
+        fmtHelpOverlay.setAttribute('aria-hidden', 'true');
+        fmtProcessHelpBtn.setAttribute('aria-expanded', 'false');
+        if (restoreFocus) fmtProcessHelpBtn.focus();
     }
 
     function fmtSetCompareMode(isEnabled) {
@@ -2106,6 +2395,124 @@
         return pairs;
     }
 
+    function fmtBuildInlineReviewProposals(baseStart, beforeText, afterText) {
+        if (beforeText === afterText) return [];
+        const beforeRuns = Array.from(beforeText.matchAll(/\s+|\S+/g), match => ({
+            text: match[0],
+            start: match.index,
+            isSpace: /^\s+$/.test(match[0])
+        }));
+        const afterRuns = Array.from(afterText.matchAll(/\s+|\S+/g), match => ({
+            text: match[0],
+            isSpace: /^\s+$/.test(match[0])
+        }));
+        const hasCompatibleRuns = beforeRuns.length > 1
+            && beforeRuns.length === afterRuns.length
+            && beforeRuns.every((run, index) => run.isSpace === afterRuns[index].isSpace);
+        if (hasCompatibleRuns) {
+            return beforeRuns
+                .map((run, index) => ({
+                    start: baseStart + run.start,
+                    end: baseStart + run.start + run.text.length,
+                    beforeText: run.text,
+                    afterText: afterRuns[index].text
+                }))
+                .filter(change => change.beforeText !== change.afterText);
+        }
+        if (!beforeText || !afterText || beforeText.length * afterText.length > 220000) {
+            return [{
+                start: baseStart,
+                end: baseStart + beforeText.length,
+                beforeText,
+                afterText
+            }];
+        }
+
+        const rows = beforeText.length + 1;
+        const cols = afterText.length + 1;
+        const table = Array.from({ length: rows }, () => Array(cols).fill(0));
+
+        for (let i = beforeText.length - 1; i >= 0; i--) {
+            for (let j = afterText.length - 1; j >= 0; j--) {
+                table[i][j] = beforeText[i] === afterText[j]
+                    ? table[i + 1][j + 1] + 1
+                    : Math.max(table[i + 1][j], table[i][j + 1]);
+            }
+        }
+
+        const changes = [];
+        let i = 0;
+        let j = 0;
+        let beforeStart = 0;
+        let beforeRun = '';
+        let afterRun = '';
+
+        function flush() {
+            if (!beforeRun && !afterRun) return;
+            changes.push({
+                start: baseStart + beforeStart,
+                end: baseStart + beforeStart + beforeRun.length,
+                beforeText: beforeRun,
+                afterText: afterRun
+            });
+            beforeRun = '';
+            afterRun = '';
+        }
+
+        while (i < beforeText.length && j < afterText.length) {
+            if (beforeText[i] === afterText[j]) {
+                flush();
+                i++;
+                j++;
+            } else {
+                if (!beforeRun && !afterRun) {
+                    beforeStart = i;
+                }
+                if (table[i + 1][j] >= table[i][j + 1]) {
+                    beforeRun += beforeText[i++];
+                } else {
+                    afterRun += afterText[j++];
+                }
+            }
+        }
+        if (!beforeRun && !afterRun) {
+            beforeStart = i;
+        }
+        while (i < beforeText.length) beforeRun += beforeText[i++];
+        while (j < afterText.length) afterRun += afterText[j++];
+        flush();
+
+        return changes;
+    }
+
+    function fmtSplitReviewProposalByTrailingWhitespace(change) {
+        const beforeTrailing = change.beforeText.match(/\s+$/);
+        const afterTrailing = change.afterText.match(/\s+$/);
+        if (!beforeTrailing || !afterTrailing) return [change];
+        if (beforeTrailing[0] === afterTrailing[0]) return [change];
+
+        const beforeCore = change.beforeText.slice(0, -beforeTrailing[0].length);
+        const afterCore = change.afterText.slice(0, -afterTrailing[0].length);
+        if (!beforeCore || !afterCore) return [change];
+
+        const parts = [];
+        if (beforeCore !== afterCore) {
+            parts.push({
+                start: change.start,
+                end: change.start + beforeCore.length,
+                beforeText: beforeCore,
+                afterText: afterCore
+            });
+        }
+        parts.push({
+            start: change.start + beforeCore.length,
+            end: change.end,
+            beforeText: beforeTrailing[0],
+            afterText: afterTrailing[0]
+        });
+        return parts;
+    }
+
     function fmtBuildReviewProposals(inputText, proposedText) {
         const before = fmtTokenize(inputText);
         const after = fmtTokenize(proposedText);
@@ -2132,16 +2539,33 @@
         let lastBeforeEqualEnd = 0;
         let lastAfterEqualEnd = 0;
 
-        function addProposal(start, end, beforeText, afterText) {
+        function pushProposal(start, end, beforeText, afterText) {
+            if (beforeText === afterText) return;
+            const id = proposals.length + 1;
             proposals.push({
-                id: proposals.length + 1,
-                label: (proposals.length + 1).toLocaleString('ar-SA'),
+                id,
+                label: id.toLocaleString('ar-SA'),
                 start,
                 end,
+                originalStart: start,
+                originalEnd: end,
                 beforeText,
                 afterText,
                 type: !beforeText ? 'insert' : (!afterText ? 'delete' : 'replace'),
                 status: 'active'
+            });
+        }
+
+        function addProposal(start, end, beforeText, afterText) {
+            const inlineChanges = fmtBuildInlineReviewProposals(start, beforeText, afterText);
+            if (!inlineChanges.length && beforeText !== afterText) {
+                pushProposal(start, end, beforeText, afterText);
+                return;
+            }
+            inlineChanges.forEach(change => {
+                fmtSplitReviewProposalByTrailingWhitespace(change).forEach(part => {
+                    pushProposal(part.start, part.end, part.beforeText, part.afterText);
+                });
             });
         }
 
@@ -2150,12 +2574,20 @@
             const nextBeforeStart = i < before.length ? before[i].start : inputText.length;
             const nextAfterStart = j < after.length ? after[j].start : proposedText.length;
             const beforeStart = beforeRun.length ? beforeRun[0].start : nextBeforeStart;
-            const beforeEnd = beforeRun.length ? Math.max(beforeRun[beforeRun.length - 1].end, nextBeforeStart) : beforeStart;
             const afterStart = afterRun.length ? afterRun[0].start : nextAfterStart;
-            const afterEnd = afterRun.length ? Math.max(afterRun[afterRun.length - 1].end, nextAfterStart) : afterStart;
+            const beforeGapStart = seenEqual ? lastBeforeEqualEnd : 0;
+            const afterGapStart = seenEqual ? lastAfterEqualEnd : 0;
+            const beforeGap = inputText.slice(beforeGapStart, beforeStart);
+            const afterGap = proposedText.slice(afterGapStart, afterStart);
+            if (beforeGap !== afterGap) addProposal(beforeGapStart, beforeStart, beforeGap, afterGap);
+            const beforeEnd = beforeRun.length ? beforeRun[beforeRun.length - 1].end : beforeStart;
+            const afterEnd = afterRun.length ? afterRun[afterRun.length - 1].end : afterStart;
             const beforeText = beforeRun.length ? inputText.slice(beforeStart, beforeEnd) : '';
             const afterText = afterRun.length ? proposedText.slice(afterStart, afterEnd) : '';
             addProposal(beforeStart, beforeEnd, beforeText, afterText);
+            const beforeTailGap = inputText.slice(beforeEnd, nextBeforeStart);
+            const afterTailGap = proposedText.slice(afterEnd, nextAfterStart);
+            if (beforeTailGap !== afterTailGap) addProposal(beforeEnd, nextBeforeStart, beforeTailGap, afterTailGap);
             beforeRun = [];
             afterRun = [];
         }
@@ -2200,6 +2632,8 @@
                 label: '١',
                 start: 0,
                 end: inputText.length,
+                originalStart: 0,
+                originalEnd: inputText.length,
                 beforeText: inputText,
                 afterText: proposedText,
                 type: 'replace',
@@ -2212,6 +2646,44 @@
 
     function fmtActiveReviewProposals() {
         return fmtReviewProposals.filter(proposal => proposal.status === 'active');
+    }
+
+    function fmtReviewOriginalStart(proposal) {
+        return Number.isFinite(proposal.originalStart) ? proposal.originalStart : proposal.start;
+    }
+
+    function fmtReviewOriginalEnd(proposal) {
+        return Number.isFinite(proposal.originalEnd) ? proposal.originalEnd : proposal.end;
+    }
+
+    function fmtApplyReviewStatuses() {
+        const originalText = fmtGetText(fmtInput);
+        const accepted = fmtReviewProposals
+            .filter(proposal => proposal.status === 'accepted')
+            .sort((a, b) => fmtReviewOriginalStart(a) - fmtReviewOriginalStart(b) || fmtReviewOriginalEnd(a) - fmtReviewOriginalEnd(b));
+
+        let outputText = originalText;
+        accepted.slice().sort((a, b) => fmtReviewOriginalStart(b) - fmtReviewOriginalStart(a) || fmtReviewOriginalEnd(b) - fmtReviewOriginalEnd(a)).forEach(proposal => {
+            outputText = outputText.slice(0, fmtReviewOriginalStart(proposal))
+                + proposal.afterText
+                + outputText.slice(fmtReviewOriginalEnd(proposal));
+        });
+
+        fmtReviewProposals.forEach(proposal => {
+            const originalStart = fmtReviewOriginalStart(proposal);
+            const originalEnd = fmtReviewOriginalEnd(proposal);
+            const deltaBefore = accepted.reduce((sum, acceptedProposal) => {
+                if (acceptedProposal.id === proposal.id) return sum;
+                if (fmtReviewOriginalEnd(acceptedProposal) > originalStart) return sum;
+                return sum + acceptedProposal.afterText.length - (fmtReviewOriginalEnd(acceptedProposal) - fmtReviewOriginalStart(acceptedProposal));
+            }, 0);
+            proposal.start = originalStart + deltaBefore;
+            proposal.end = proposal.status === 'accepted'
+                ? proposal.start + proposal.afterText.length
+                : originalEnd + deltaBefore;
+        });
+
+        fmtSetPlainText(fmtOutput, outputText);
     }
 
     function fmtReviewPreview(value) {
@@ -2397,12 +2869,8 @@
     function fmtAcceptReviewProposal(id) {
         const proposal = fmtReviewProposals.find(item => item.id === id && item.status === 'active');
         if (!proposal) return;
-        const text = fmtGetText(fmtOutput);
-        const nextText = text.slice(0, proposal.start) + proposal.afterText + text.slice(proposal.end);
-        const delta = proposal.afterText.length - (proposal.end - proposal.start);
-        fmtSetPlainText(fmtOutput, nextText);
         proposal.status = 'accepted';
-        fmtShiftReviewRanges(proposal, delta);
+        fmtApplyReviewStatuses();
         fmtRecordHistory(fmtOutput);
         fmtRenderHighlights();
         fmtCompleteReviewIfDone('تم قبول كل المقترحات');
@@ -2412,19 +2880,18 @@
         const proposal = fmtReviewProposals.find(item => item.id === id && item.status === 'active');
         if (!proposal) return;
         proposal.status = 'rejected';
+        fmtApplyReviewStatuses();
         fmtRenderHighlights();
         fmtCompleteReviewIfDone('انتهت مراجعة المقترحات');
     }
 
     function fmtAcceptRemainingReview() {
-        const active = fmtActiveReviewProposals().sort((a, b) => b.start - a.start || b.end - a.end);
+        const active = fmtActiveReviewProposals();
         if (!active.length) return;
-        let text = fmtGetText(fmtOutput);
         active.forEach(proposal => {
-            text = text.slice(0, proposal.start) + proposal.afterText + text.slice(proposal.end);
             proposal.status = 'accepted';
         });
-        fmtSetPlainText(fmtOutput, text);
+        fmtApplyReviewStatuses();
         fmtRecordHistory(fmtOutput);
         fmtExitReviewMode(false);
         showNotify('تم قبول كل المقترحات المتبقية');
@@ -2436,6 +2903,7 @@
         active.forEach(proposal => {
             proposal.status = 'rejected';
         });
+        fmtApplyReviewStatuses();
         fmtExitReviewMode(false);
         showNotify('تم رفض المقترحات المتبقية');
     }
@@ -2967,6 +3435,10 @@
     });
     document.addEventListener('keydown', event => {
         if (event.key === 'Escape') {
+            if (fmtHelpOverlay.classList.contains('show')) {
+                fmtCloseProcessHelp(false);
+                return;
+            }
             fmtHideEditPopover();
             if (fmtMiniPanel.classList.contains('show')) fmtSetMiniMode(false);
             if (document.body.classList.contains('fmt-focus-mode')) fmtSetFocusMode(false);
@@ -3031,6 +3503,11 @@
     fmtReviewClose.addEventListener('click', () => fmtExitReviewMode());
     fmtFocusExitBtn.addEventListener('click', () => fmtSetFocusMode(false));
     themeToggle.addEventListener('click', fmtToggleTheme);
+    fmtProcessHelpBtn.addEventListener('click', fmtOpenProcessHelp);
+    fmtHelpClose.addEventListener('click', () => fmtCloseProcessHelp());
+    fmtHelpOverlay.addEventListener('click', event => {
+        if (event.target === fmtHelpOverlay) fmtCloseProcessHelp();
+    });
     fmtSetTheme(fmtLoadTheme());
     fmtUpdateCounts();
 </script>
