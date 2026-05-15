@@ -255,6 +255,28 @@
             color: #ffffff;
         }
 
+        .fmt-header-left #fmt-focus-mode {
+            border-color: rgba(13, 148, 136, 0.26);
+            background: var(--accent-soft);
+            color: var(--accent-dark);
+        }
+
+        .fmt-header-left #fmt-focus-mode:hover {
+            border-color: var(--accent);
+            color: var(--accent-dark);
+            box-shadow: 0 10px 22px rgba(13, 148, 136, 0.16);
+        }
+
+        .fmt-header-left #fmt-focus-mode.fmt-btn-active {
+            border-color: var(--accent);
+            background: linear-gradient(180deg, var(--accent) 0%, var(--accent-dark) 100%);
+            color: #ffffff;
+        }
+
+        .fmt-header-left #fmt-focus-mode.fmt-btn-active:hover {
+            color: #ffffff;
+        }
+
         .theme-toggle {
             width: 34px;
             height: 34px;
@@ -938,6 +960,97 @@
             background: var(--danger-soft);
         }
 
+        .fmt-focus-exit {
+            position: fixed;
+            top: 14px;
+            left: 14px;
+            z-index: 6500;
+            display: none;
+            min-height: 36px;
+            padding: 7px 12px;
+            border: 1px solid var(--border-strong);
+            border-radius: 8px;
+            background: var(--popover-bg);
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: var(--shadow-soft);
+            -webkit-backdrop-filter: blur(18px);
+            backdrop-filter: blur(18px);
+            transition:
+                transform 0.18s ease,
+                box-shadow 0.18s ease,
+                border-color 0.18s ease,
+                color 0.18s ease;
+        }
+
+        .fmt-focus-exit:hover {
+            transform: translateY(-1px);
+            border-color: var(--accent);
+            color: var(--accent-dark);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .fmt-focus-exit:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 3px var(--focus-ring);
+        }
+
+        body.fmt-focus-mode .fmt-wrapper {
+            padding: 0;
+        }
+
+        body.fmt-focus-mode .fmt-container {
+            height: 100vh;
+            gap: 0;
+        }
+
+        body.fmt-focus-mode .fmt-header,
+        body.fmt-focus-mode .fmt-panel-search,
+        body.fmt-focus-mode .fmt-diff-center,
+        body.fmt-focus-mode .fmt-panel-actions .fmt-icon-btn {
+            display: none;
+        }
+
+        body.fmt-focus-mode .fmt-workspace {
+            border: 0;
+            border-radius: 0;
+            box-shadow: none;
+        }
+
+        body.fmt-focus-mode .fmt-grid {
+            background: var(--surface);
+        }
+
+        body.fmt-focus-mode .fmt-panel-head {
+            min-height: 34px;
+            padding: 7px 28px;
+            background: var(--surface);
+            border-bottom-color: var(--border-subtle);
+        }
+
+        body.fmt-focus-mode .fmt-panel-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        body.fmt-focus-mode .fmt-textarea {
+            padding: 32px clamp(36px, 5vw, 72px) 90px;
+            font-size: 18px;
+            line-height: 2.05;
+        }
+
+        body.fmt-focus-mode .fmt-focus-exit {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        body.fmt-focus-mode .fmt-mini-panel {
+            display: none;
+        }
+
         @keyframes slideIn {
             from {
                 opacity: 0;
@@ -984,7 +1097,8 @@
                         <button onclick="fmtClear()" class="fmt-btn fmt-btn-danger">مسح الكل</button>
                     </div>
                     <div class="fmt-header-left">
-                        <button id="fmt-mini-mode" onclick="fmtToggleMiniMode()" class="fmt-btn" type="button" aria-pressed="false">وضع مدمج</button>
+                        <button id="fmt-focus-mode" onclick="fmtToggleFocusMode()" class="fmt-btn" type="button" aria-pressed="false">وضع التركيز </button>
+                        <button id="fmt-mini-mode" onclick="fmtToggleMiniMode()" class="fmt-btn" type="button" aria-pressed="false">نافذة صغيرة</button>
                         <button id="fmt-compare-mode" onclick="fmtCompareTexts()" class="fmt-btn" type="button" aria-pressed="false">مقارنة بين نصين</button>
                         <div class="app-copyright">محمد المحيميد 2026</div>
                     </div>
@@ -1061,6 +1175,7 @@
 </div>
 
 <div id="notify" class="notification">تم النسخ</div>
+<button id="fmt-focus-exit" class="fmt-focus-exit" type="button" aria-hidden="true" aria-label="الخروج من وضع التركيز">الخروج من التركيز</button>
 <div id="fmt-mini-panel" class="fmt-mini-panel" aria-hidden="true">
     <textarea id="fmt-mini-input" class="fmt-mini-textarea" placeholder="الصق السطر هنا..."></textarea>
     <textarea id="fmt-mini-output" class="fmt-mini-textarea" placeholder="النتيجة..."></textarea>
@@ -1090,6 +1205,8 @@
     const fmtCompareModeBtn = document.getElementById('fmt-compare-mode');
     const fmtInputLabel = document.getElementById('fmt-input-label');
     const fmtOutputLabel = document.getElementById('fmt-output-label');
+    const fmtFocusModeBtn = document.getElementById('fmt-focus-mode');
+    const fmtFocusExitBtn = document.getElementById('fmt-focus-exit');
     const fmtMiniModeBtn = document.getElementById('fmt-mini-mode');
     const fmtMiniPanel = document.getElementById('fmt-mini-panel');
     const fmtMiniInput = document.getElementById('fmt-mini-input');
@@ -1195,12 +1312,34 @@
         }
     }
 
+    function fmtSetFocusMode(isEnabled, showMessage = true) {
+        document.body.classList.toggle('fmt-focus-mode', isEnabled);
+        fmtFocusModeBtn.classList.toggle('fmt-btn-active', isEnabled);
+        fmtFocusModeBtn.setAttribute('aria-pressed', String(isEnabled));
+        fmtFocusModeBtn.textContent = isEnabled ? 'إنهاء التركيز' : 'تركيز عميق';
+        fmtFocusModeBtn.title = isEnabled ? 'الخروج من وضع التركيز' : 'الدخول إلى وضع التركيز';
+        fmtFocusModeBtn.setAttribute('aria-label', fmtFocusModeBtn.title);
+        fmtFocusExitBtn.setAttribute('aria-hidden', String(!isEnabled));
+        if (isEnabled) {
+            fmtHideEditPopover();
+            if (fmtMiniPanel.classList.contains('show')) fmtSetMiniMode(false);
+            setTimeout(() => {
+                (document.activeElement === fmtOutput ? fmtOutput : fmtInput).focus();
+            }, 0);
+        }
+        if (showMessage) showNotify(isEnabled ? 'تم تفعيل وضع التركيز' : 'تم إغلاق وضع التركيز');
+    }
+
+    function fmtToggleFocusMode() {
+        fmtSetFocusMode(!document.body.classList.contains('fmt-focus-mode'));
+    }
+
     function fmtMiniDocumentHtml() {
         return `<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>وضع مدمج</title>
+    <title>نافذة صغيرة</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap');
         * { box-sizing: border-box; }
@@ -1311,13 +1450,13 @@
                     return;
                 }
                 pipOutput.value = fmtFormatText(text);
-                showNotify('تمت المعالجة في النافذة العائمة');
+                showNotify('تمت المعالجة في النافذة');
             };
             const clearPipText = () => {
                 pipInput.value = '';
                 pipOutput.value = '';
                 pipInput.focus();
-                showNotify('تم مسح النافذة العائمة');
+                showNotify('تم مسح النافذة');
             };
 
             pipProcess.addEventListener('click', processPipText);
@@ -1354,7 +1493,7 @@
         const openedPip = await fmtOpenMiniPip();
         if (!openedPip) {
             fmtSetMiniMode(true);
-            showNotify('المتصفح لا يدعم النافذة العائمة، تم فتح الوضع داخل الصفحة');
+            showNotify('المتصفح لا يدعم النافذة الصغيرة، تم فتح الوضع داخل الصفحة');
         }
     }
 
@@ -1951,7 +2090,7 @@
         fmtDiffEnabled = true;
         fmtDiffBtn.classList.add('fmt-btn-active');
         fmtRenderHighlights();
-        showNotify('تمت مقارنة النصين');
+        
     }
 
     function showNotify(msg) {
@@ -2014,7 +2153,7 @@
             return showNotify('الرجاء لصق النص أولاً');
         }
         fmtMiniOutput.value = fmtFormatText(text);
-        showNotify('تمت المعالجة في الوضع المدمج');
+        showNotify('تمت المعالجة');
     }
 
     async function fmtCopyMiniResult(text) {
@@ -2042,7 +2181,6 @@
         fmtMiniInput.value = '';
         fmtMiniOutput.value = '';
         fmtMiniInput.focus();
-        showNotify('تم مسح الوضع المدمج');
     }
 
     function fmtRemoveBreaks() {
@@ -2107,6 +2245,7 @@
         if (event.key === 'Escape') {
             fmtHideEditPopover();
             if (fmtMiniPanel.classList.contains('show')) fmtSetMiniMode(false);
+            if (document.body.classList.contains('fmt-focus-mode')) fmtSetFocusMode(false);
         }
     });
     window.addEventListener('resize', fmtHideEditPopover);
@@ -2148,6 +2287,7 @@
     });
     fmtHighlightBefore.addEventListener('input', fmtRenderHighlights);
     fmtHighlightAfter.addEventListener('input', fmtRenderHighlights);
+    fmtFocusExitBtn.addEventListener('click', () => fmtSetFocusMode(false));
     themeToggle.addEventListener('click', fmtToggleTheme);
     fmtSetTheme(fmtLoadTheme());
     fmtUpdateCounts();
