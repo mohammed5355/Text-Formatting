@@ -1534,7 +1534,7 @@
                                 <path d="m19.1 4.9-1.4 1.4"></path>
                             </svg>
                         </button>
-                        <button id="fmt-process-help" class="fmt-help-toggle" type="button" aria-label="شرح معالجة شاملة" aria-expanded="false" aria-controls="fmt-help-overlay" title="شرح معالجة شاملة">؟</button>
+                        <button id="fmt-process-help" class="fmt-help-toggle" type="button" aria-label="توضيح" aria-expanded="false" aria-controls="fmt-help-overlay" title="شرح عمل الصفحة">؟</button>
                     </div>
                     <div class="fmt-controls">
                         <button onclick="fmtProcess()" class="fmt-btn fmt-btn-primary">معالجة شاملة</button>
@@ -1658,7 +1658,7 @@
     <section class="fmt-help-dialog" role="dialog" aria-modal="true" aria-labelledby="fmt-help-title">
         <div class="fmt-help-head">
             <div class="fmt-help-title">
-                <strong id="fmt-help-title">ماذا تفعل معالجة شاملة؟</strong>
+                <strong id="fmt-help-title">شرح عمل هذه الصفحة‫:‬</strong>
                 <span>تطبّق الأداة هذه التنسيقات على النص الأصلي وتضع النتيجة في خانة النص بعد المعالجة.</span>
             </div>
             <button id="fmt-help-close" class="fmt-icon-btn" type="button" aria-label="إغلاق الشرح" title="إغلاق الشرح">×</button>
@@ -1681,8 +1681,8 @@
                     <p>تحذف المسافة قبل علامات الترقيم وتحول الفاصلة الإنجليزية بين الكلمات العربية إلى فاصلة عربية.</p>
                 </div>
                 <div class="fmt-help-example">
-                    <div class="fmt-help-example-row"><span>قبل</span><code>مرحباً , كيف الحال ؟</code></div>
-                    <div class="fmt-help-example-row"><span>بعد</span><code>مرحباً، كيف الحال؟</code></div>
+                    <div class="fmt-help-example-row"><span>قبل</span><code>وأجاب ممثل الجهة المدعى عليها , عن الدعوى ‫:‬</code></div>
+                    <div class="fmt-help-example-row"><span>بعد</span><code>وأجاب ممثل الجهة المدعى عليها، عن الدعوى:</code></div>
                 </div>
             </article>
             <article class="fmt-help-case">
@@ -1721,14 +1721,14 @@
                     <p>تحول التاريخ المكتوب بصيغة سنة-شهر-يوم إلى يوم-شهر-سنة عندما يكون ذلك واضحًا.</p>
                 </div>
                 <div class="fmt-help-example">
-                    <div class="fmt-help-example-row"><span>قبل</span><code>2026-05-15</code></div>
+                    <div class="fmt-help-example-row"><span>قبل</span><code>15-05-2026</code></div>
                     <div class="fmt-help-example-row"><span>بعد</span><code>١٥-٠٥-٢٠٢٦</code></div>
                 </div>
             </article>
             <article class="fmt-help-case">
                 <div>
                     <h3>تصحيح القيم الرقمية الثنائية</h3>
-                    <p>تعكس ترتيب رقمين مفصولين بشرطة أو شرطة مائلة عندما يظهران بالاتجاه غير المطلوب.</p>
+                    <p>تعكس ترتيب رقمين مفصولين بشرطة أو شرطة مائلة.</p>
                 </div>
                 <div class="fmt-help-example">
                     <div class="fmt-help-example-row"><span>قبل</span><code>5/10</code></div>
@@ -2706,16 +2706,16 @@
     function fmtReviewReason(proposal) {
         const beforeText = proposal.beforeText;
         const afterText = proposal.afterText;
-        if (proposal.type === 'insert') return 'إضافة جزء تقترحه المعالجة لتحسين اكتمال الصياغة.';
+        if (proposal.type === 'insert') return 'تحسين التنسيق.';
         if (proposal.type === 'delete') return 'حذف جزء زائد أو غير لازم بعد التنسيق.';
-        if (/\n/.test(beforeText) && !/\n/.test(afterText)) return 'إزالة فاصل سطر داخل الجملة لتوحيد تدفق النص.';
+        if (/\n/.test(beforeText) && !/\n/.test(afterText)) return 'إزالة فاصل سطر داخل الجملة.';
         if (beforeText.replace(/\s+/g, ' ').trim() === afterText.replace(/\s+/g, ' ').trim() && beforeText !== afterText) {
             return 'تنظيم المسافات الزائدة دون تغيير المعنى.';
         }
         if (/[0-9۰-۹]/.test(beforeText) && /[\u0660-\u0669]/.test(afterText)) return 'توحيد شكل الأرقام إلى الصيغة العربية.';
         if (/[.,،:;؟!()[\]{}]/.test(beforeText + afterText)) return 'ضبط علامات الترقيم والمسافات المحيطة بها.';
         if (/[\\/-]/.test(beforeText + afterText)) return 'تصحيح ترتيب صيغة رقمية أو تاريخية.';
-        return 'اقتراح لغوي ناتج عن المعالجة الشاملة للنص.';
+        return 'اقتراح لتحسين التنسيق.';
     }
 
     function fmtReviewSegmentsForOutput() {
