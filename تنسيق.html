@@ -1316,7 +1316,7 @@
         document.body.classList.toggle('fmt-focus-mode', isEnabled);
         fmtFocusModeBtn.classList.toggle('fmt-btn-active', isEnabled);
         fmtFocusModeBtn.setAttribute('aria-pressed', String(isEnabled));
-        fmtFocusModeBtn.textContent = isEnabled ? 'إنهاء التركيز' : 'تركيز عميق';
+        fmtFocusModeBtn.textContent = isEnabled ? 'إنهاء التركيز' : 'وضع التركيز';
         fmtFocusModeBtn.title = isEnabled ? 'الخروج من وضع التركيز' : 'الدخول إلى وضع التركيز';
         fmtFocusModeBtn.setAttribute('aria-label', fmtFocusModeBtn.title);
         fmtFocusExitBtn.setAttribute('aria-hidden', String(!isEnabled));
