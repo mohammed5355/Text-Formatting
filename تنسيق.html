@@ -2300,7 +2300,7 @@
             diffId: mark.dataset.diffId ? Number(mark.dataset.diffId) : null
         };
         fmtEditInput.value = mark.innerText;
-        fmtEditKeepOriginal.hidden = box !== fmtOutput || !mark.classList.contains('fmt-diff');
+        fmtEditKeepOriginal.hidden = fmtCompareModeEnabled || box !== fmtOutput || !mark.classList.contains('fmt-diff');
         fmtEditPopover.classList.add('show');
         fmtPositionEditPopover(mark);
         fmtEditInput.focus();
