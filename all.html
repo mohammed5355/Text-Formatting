@@ -853,7 +853,7 @@
 
                     <div class="input-group">
                         <label>اسم مقدم الصحيفة‫/‬ الحاضر</label>
-                        <input type="text" id="name" placeholder="‫.‬..." oninput="updateAll()">
+                        <input type="text" id="name" placeholder="٠٠٠٠٠٠٠" oninput="updateAll()">
                     </div>
                     
                     <div class="input-group">
@@ -874,7 +874,7 @@
                         <div class="date-inputs">
                             <input type="text" id="doc_d" class="day" placeholder="يوم" oninput="updateAll()"><span>/</span>
                             <input type="text" id="doc_m" class="month" placeholder="شهر" oninput="updateAll()"><span>/</span>
-                            <input type="text" id="doc_y" class="year" placeholder="سنة" oninput="updateAll()">
+                            <input type="text" id="doc_y" class="year" placeholder="١٤٠٠" oninput="updateAll()">
                         </div>
                     </div>
 
@@ -893,13 +893,13 @@
                         <div class="date-inputs">
                             <input type="text" id="lic_d" class="day" placeholder="يوم" oninput="updateAll()"><span>/</span>
                             <input type="text" id="lic_m" class="month" placeholder="شهر" oninput="updateAll()"><span>/</span>
-                            <input type="text" id="lic_y" class="year" placeholder="سنة" oninput="updateAll()">
+                            <input type="text" id="lic_y" class="year" placeholder="١٤٠٠" oninput="updateAll()">
                         </div>
                     </div>
 
                     <div class="input-group">
                         <label>رقم رخصة المحاماة</label>
-                        <input type="text" id="lic_num" placeholder="45/..." oninput="updateAll()">
+                        <input type="text" id="lic_num" placeholder="45/٠٠٠" oninput="updateAll()">
                     </div>
                     <div class="input-group" style="display: flex; align-items: flex-end;">
                         <button onclick="resetFormula()" style="background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; width: 100%; transition: 0.2s;">إعادة ضبط</button>
@@ -1026,9 +1026,11 @@
         document.getElementById('fact-error').style.display = 'none';
     }
 
+    const BLANK_PLACEHOLDER = "٠٠٠٠٠٠٠";
+
     const val = (id) => {
         const v = document.getElementById(id).value;
-        return v ? v.trim() : "..........";
+        return v ? v.trim() : BLANK_PLACEHOLDER;
     };
 
     function getDate(prefix) {
@@ -1037,7 +1039,7 @@
         const y = document.getElementById(prefix + '_y').value;
         
         if (d && m && y) return `${d}/${m}/${y}`;
-        return "..../../..";
+        return "٠٠/٠٠/١٤٠٠";
     }
 
     function generateScenario(config) {
@@ -1057,7 +1059,7 @@
         const docDate = getDate('doc'); 
         const licNum = val('lic_num');
         const licDate = getDate('lic'); 
-        const jobSource = document.getElementById('doc_source_manual').value || "..........";
+        const jobSource = document.getElementById('doc_source_manual').value || BLANK_PLACEHOLDER;
         
         let appLabel = "";
         if (type === 'appellee') {
